@@ -29,7 +29,6 @@
         [self createAudioUnitByAugraph];
         [self setAudioUnitProperties];
         
-        
     }
     return self;
 }
@@ -126,61 +125,66 @@
     AudioFormatFlags flags = self.aSession.formatFlags;
     CGFloat rate = self.aSession.currentSampleRate;
     NSInteger chs = self.aSession.currentChannels;
-    AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs];
+    //输入给扬声器的音频数据格式
+    AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved sampleRate:rate channels:chs];
+    // PCM文件的音频的数据格式
+    AudioStreamBasicDescription cvtInDes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs];
+    
+    // 设置扬声器的输入音频数据格式
     status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &odes, sizeof(odes));
     if (status != noErr) {
         NSLog(@"AudioUnitSetProperty io fail %d",status);
     }
-    status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &odes, sizeof(odes));
+    
+    // 设置格式转换器的输入输出音频数据格式;对于格式转换器AudioUnit 他的AudioUnitElement只有一个 element0
+    status = AudioUnitSetProperty(_cvtUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &cvtInDes, sizeof(cvtInDes));
     if (status != noErr) {
-        NSLog(@"AudioUnitSetProperty io fail %d",status);
+        NSLog(@"AudioUnitSetProperty convert in fail %d",status);
     }
-    // 设置回调函数
+    status = AudioUnitSetProperty(_cvtUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &odes, sizeof(odes));
+    if (status != noErr) {
+        NSLog(@"AudioUnitSetProperty convert ou fail %d",status);
+    }
+    
+    /** 构建连接
+     *  只有构建连接之后才有一个完整的数据驱动链。如下将构成链条如下：
+     *  _cvtUnit通过回调向文件要数据，得到数据后进行格式转换，将输出作为输入数据输送给_ioUnit，然后_ioUnit播放数据
+     */
+    status = AUGraphConnectNodeInput(_aGraph, _cvtNode, 0, _ioNode, 0);
+    if (status != noErr) {
+        NSLog(@"AUGraphConnectNodeInput fail %d",status);
+    }
     AURenderCallbackStruct callback;
     callback.inputProc = InputRenderCallback;
     callback.inputProcRefCon = (__bridge void*)self;
-    status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, sizeof(callback));
+    status = AudioUnitSetProperty(_cvtUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, sizeof(callback));
     if (status != noErr) {
         NSLog(@"AudioUnitSetProperty fail %d",status);
-    }
-    
-    // 初始化AudioUnit
-    status = AudioUnitInitialize(_ioUnit);
-    if (status != noErr) {
-        NSLog(@"AudioUnitInitialize fail %d", status);
     }
 }
 
 - (void)play
 {
     OSStatus stauts;
-    if (_aGraph) {  // 通过Augraph方式创建AudioUnit
-        CAShow(_aGraph);
-        
-        // 7、初始化AUGraph,初始化之后才能正常启动播放
-        stauts = AUGraphInitialize(_aGraph);
-        if (stauts != noErr) {
-            NSLog(@"AUGraphInitialize fail %d",stauts);
-        }
-        stauts = AUGraphStart(_aGraph);
-        if (stauts != noErr) {
-            NSLog(@"AUGraphStart fail %d",stauts);
-        }
-    } else {
-        AudioOutputUnitStart(_ioUnit);
+    CAShow(_aGraph);
+    
+    // 7、初始化AUGraph,初始化之后才能正常启动播放
+    stauts = AUGraphInitialize(_aGraph);
+    if (stauts != noErr) {
+        NSLog(@"AUGraphInitialize fail %d",stauts);
+    }
+    stauts = AUGraphStart(_aGraph);
+    if (stauts != noErr) {
+        NSLog(@"AUGraphStart fail %d",stauts);
     }
 }
 
 - (void)stop
 {
     OSStatus status;
-    if (_aGraph) {  // 通过Augraph方式创建AudioUnit
-        status = AUGraphStop(_aGraph);
-        if (status != noErr) {
-            NSLog(@"AUGraphStop fail %d",status);
-        }
-    } else {
-        AudioOutputUnitStart(_ioUnit);
+    status = AUGraphStop(_aGraph);
+    if (status != noErr) {
+        NSLog(@"AUGraphStop fail %d",status);
     }
 }
 

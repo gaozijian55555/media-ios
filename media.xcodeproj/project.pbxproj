@@ -11,6 +11,7 @@
 		F4358FD82290EEF400D63289 /* ADAudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FD72290EEF400D63289 /* ADAudioSession.m */; };
 		F4358FDB2290F11600D63289 /* BaseUnitPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */; };
 		F4358FDE2290F50A00D63289 /* AVAudioSession+extion.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */; };
+		F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */ = {isa = PBXBuildFile; fileRef = F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */; };
 		F45E4683228A514E00C7DBF9 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4682228A514E00C7DBF9 /* AppDelegate.m */; };
 		F45E4686228A514E00C7DBF9 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4685228A514E00C7DBF9 /* ViewController.m */; };
 		F45E4689228A514E00C7DBF9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F45E4687228A514E00C7DBF9 /* Main.storyboard */; };
@@ -18,8 +19,6 @@
 		F45E468E228A514F00C7DBF9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F45E468C228A514F00C7DBF9 /* LaunchScreen.storyboard */; };
 		F45E4691228A514F00C7DBF9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4690228A514F00C7DBF9 /* main.m */; };
 		F45E46D9228F87CC00C7DBF9 /* ADAudioUnitPlay.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46D5228F87CC00C7DBF9 /* ADAudioUnitPlay.m */; };
-		F45E46DE228F880A00C7DBF9 /* abc.pcm in Resources */ = {isa = PBXBuildFile; fileRef = F45E46DC228F880A00C7DBF9 /* abc.pcm */; };
-		F45E46DF228F880A00C7DBF9 /* MiAmor.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F45E46DD228F880A00C7DBF9 /* MiAmor.mp3 */; };
 		F45E46E2228F884900C7DBF9 /* ADAVPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46E1228F884900C7DBF9 /* ADAVPlayer.m */; };
 		F45E46E5228F888000C7DBF9 /* ADAVAudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46E4228F888000C7DBF9 /* ADAVAudioPlayer.m */; };
 		F45E46E7228F8AF600C7DBF9 /* test-mp3-1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */; };
@@ -35,6 +34,7 @@
 		F4358FDC2290F50A00D63289 /* AVAudioSession+extion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AVAudioSession+extion.h"; sourceTree = "<group>"; };
 		F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AVAudioSession+extion.m"; sourceTree = "<group>"; };
 		F4358FDF2290F54B00D63289 /* AudioCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioCommon.h; sourceTree = "<group>"; };
+		F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_f32le_2.pcm; sourceTree = "<group>"; };
 		F45E467E228A514E00C7DBF9 /* media.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = media.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F45E4681228A514E00C7DBF9 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F45E4682228A514E00C7DBF9 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -47,8 +47,6 @@
 		F45E4690228A514F00C7DBF9 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		F45E46D5228F87CC00C7DBF9 /* ADAudioUnitPlay.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADAudioUnitPlay.m; sourceTree = "<group>"; };
 		F45E46D7228F87CC00C7DBF9 /* ADAudioUnitPlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADAudioUnitPlay.h; sourceTree = "<group>"; };
-		F45E46DC228F880A00C7DBF9 /* abc.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = abc.pcm; sourceTree = "<group>"; };
-		F45E46DD228F880A00C7DBF9 /* MiAmor.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = MiAmor.mp3; sourceTree = "<group>"; };
 		F45E46E0228F884900C7DBF9 /* ADAVPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAVPlayer.h; sourceTree = "<group>"; };
 		F45E46E1228F884900C7DBF9 /* ADAVPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADAVPlayer.m; sourceTree = "<group>"; };
 		F45E46E3228F888000C7DBF9 /* ADAVAudioPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAVAudioPlayer.h; sourceTree = "<group>"; };
@@ -126,9 +124,8 @@
 		F45E46DB228F87E600C7DBF9 /* fileResources */ = {
 			isa = PBXGroup;
 			children = (
+				F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */,
 				F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */,
-				F45E46DC228F880A00C7DBF9 /* abc.pcm */,
-				F45E46DD228F880A00C7DBF9 /* MiAmor.mp3 */,
 			);
 			path = fileResources;
 			sourceTree = "<group>";
@@ -191,11 +188,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F45E468E228A514F00C7DBF9 /* LaunchScreen.storyboard in Resources */,
-				F45E46DF228F880A00C7DBF9 /* MiAmor.mp3 in Resources */,
+				F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */,
 				F45E468B228A514F00C7DBF9 /* Assets.xcassets in Resources */,
 				F45E46E7228F8AF600C7DBF9 /* test-mp3-1.mp3 in Resources */,
 				F45E4689228A514E00C7DBF9 /* Main.storyboard in Resources */,
-				F45E46DE228F880A00C7DBF9 /* abc.pcm in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

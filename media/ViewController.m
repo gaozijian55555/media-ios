@@ -50,12 +50,12 @@
 
 - (void)playPCM
 {
-    NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test-pcm_out" ofType:@"pcm"];
+    NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test_441_f32le_2" ofType:@"pcm"];
     
-    self.basePlay = [[BaseUnitPlayer alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved path:l1path];
-    [self.basePlay play];
+//    self.basePlay = [[BaseUnitPlayer alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved path:l1path];
+//    [self.basePlay play];
     
-//    self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved path:l1path];
-//    [self.unitPlay play];
+    self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked path:l1path];
+    [self.unitPlay play];
 }
 @end
