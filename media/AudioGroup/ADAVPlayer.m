@@ -10,13 +10,13 @@
 
 @implementation ADAVPlayer
 
-- (void)initWithPath:(NSString*)path
+- (void)initWithURL:(NSURL*)pathUrl
 {
     // 查询支持的容器格式
     //    NSLog(@"surport formats %@",[AVURLAsset audiovisualMIMETypes]);
     
-    // 用asset来初始化player；也可以直接用URL来初始化；注意如果是本地的这里要用fileURLWithxxx；远程的则用urlWithxxx，否则url协议解析会出错
-    self.a1PlayerItem = [[AVPlayerItem alloc] initWithURL:[NSURL fileURLWithPath:path]];
+    // 用asset来初始化player；也可以直接用URL来初始化
+    self.a1PlayerItem = [[AVPlayerItem alloc] initWithURL:pathUrl];
     self.a1Player = [[AVPlayer alloc] initWithPlayerItem:_a1PlayerItem];
     if (!self.a1Player) {
         NSLog(@"AVPlayer init fail");

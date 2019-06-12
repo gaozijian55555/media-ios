@@ -263,6 +263,7 @@ static OSStatus InputRenderCallback(void *inRefCon,
     for (int iBuffer=0; iBuffer < ioData->mNumberBuffers; ++iBuffer) {
         ioData->mBuffers[iBuffer].mDataByteSize = (UInt32)[player->inputSteam read:ioData->mBuffers[iBuffer].mData maxLength:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize];
         NSLog(@"buffer %d out size: %d",iBuffer, ioData->mBuffers[iBuffer].mDataByteSize);
+        NSLog(@"数据 %@",[NSData dataWithBytes:ioData->mBuffers[0].mData length:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize]);
     }
     
     return noErr;

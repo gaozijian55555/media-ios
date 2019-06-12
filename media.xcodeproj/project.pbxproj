@@ -12,6 +12,7 @@
 		F4358FDB2290F11600D63289 /* BaseUnitPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */; };
 		F4358FDE2290F50A00D63289 /* AVAudioSession+extion.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */; };
 		F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */ = {isa = PBXBuildFile; fileRef = F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */; };
+		F4358FEF2294ECB800D63289 /* test_441_s16le_2.amr in Resources */ = {isa = PBXBuildFile; fileRef = F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */; };
 		F45E4683228A514E00C7DBF9 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4682228A514E00C7DBF9 /* AppDelegate.m */; };
 		F45E4686228A514E00C7DBF9 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4685228A514E00C7DBF9 /* ViewController.m */; };
 		F45E4689228A514E00C7DBF9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F45E4687228A514E00C7DBF9 /* Main.storyboard */; };
@@ -22,6 +23,18 @@
 		F45E46E2228F884900C7DBF9 /* ADAVPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46E1228F884900C7DBF9 /* ADAVPlayer.m */; };
 		F45E46E5228F888000C7DBF9 /* ADAVAudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46E4228F888000C7DBF9 /* ADAVAudioPlayer.m */; };
 		F45E46E7228F8AF600C7DBF9 /* test-mp3-1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */; };
+		F4908D1C22ABB44B002566FF /* GLFrameBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D0E22ABB44A002566FF /* GLFrameBuffer.m */; };
+		F4908D1D22ABB44B002566FF /* GLRenderYUVSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1222ABB44A002566FF /* GLRenderYUVSource.m */; };
+		F4908D1E22ABB44B002566FF /* GLRenderRGBSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1422ABB44A002566FF /* GLRenderRGBSource.m */; };
+		F4908D1F22ABB44B002566FF /* CGImageUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1522ABB44A002566FF /* CGImageUtils.m */; };
+		F4908D2022ABB44B002566FF /* GLUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1822ABB44A002566FF /* GLUtils.m */; };
+		F4908D2122ABB44B002566FF /* GLRenderSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1922ABB44A002566FF /* GLRenderSource.m */; };
+		F4908D2222ABB44B002566FF /* GLProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1A22ABB44B002566FF /* GLProgram.m */; };
+		F4908D2322ABB44B002566FF /* GLContext.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1B22ABB44B002566FF /* GLContext.m */; };
+		F4908D2622ABB5C5002566FF /* GLVideoView.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D2522ABB5C5002566FF /* GLVideoView.m */; };
+		F4908D2922ABB751002566FF /* YuvPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D2822ABB751002566FF /* YuvPlayer.m */; };
+		F4908D2F22ADEBD3002566FF /* VideoFileSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D2E22ADEBD3002566FF /* VideoFileSource.m */; };
+		F4D0B1F222B0BD8500195205 /* test-420P-320x160.yuv in Resources */ = {isa = PBXBuildFile; fileRef = F4D0B1F122B0BD8500195205 /* test-420P-320x160.yuv */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +48,7 @@
 		F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AVAudioSession+extion.m"; sourceTree = "<group>"; };
 		F4358FDF2290F54B00D63289 /* AudioCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioCommon.h; sourceTree = "<group>"; };
 		F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_f32le_2.pcm; sourceTree = "<group>"; };
+		F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_s16le_2.amr; sourceTree = "<group>"; };
 		F45E467E228A514E00C7DBF9 /* media.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = media.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F45E4681228A514E00C7DBF9 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F45E4682228A514E00C7DBF9 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -52,6 +66,30 @@
 		F45E46E3228F888000C7DBF9 /* ADAVAudioPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAVAudioPlayer.h; sourceTree = "<group>"; };
 		F45E46E4228F888000C7DBF9 /* ADAVAudioPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADAVAudioPlayer.m; sourceTree = "<group>"; };
 		F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "test-mp3-1.mp3"; sourceTree = "<group>"; };
+		F4908D0B22ABB44A002566FF /* GLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLUtils.h; sourceTree = "<group>"; };
+		F4908D0C22ABB44A002566FF /* CGImageUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGImageUtils.h; sourceTree = "<group>"; };
+		F4908D0D22ABB44A002566FF /* GLRenderSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLRenderSource.h; sourceTree = "<group>"; };
+		F4908D0E22ABB44A002566FF /* GLFrameBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLFrameBuffer.m; sourceTree = "<group>"; };
+		F4908D0F22ABB44A002566FF /* GLRenderRGBSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLRenderRGBSource.h; sourceTree = "<group>"; };
+		F4908D1022ABB44A002566FF /* GLContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLContext.h; sourceTree = "<group>"; };
+		F4908D1122ABB44A002566FF /* GLProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLProgram.h; sourceTree = "<group>"; };
+		F4908D1222ABB44A002566FF /* GLRenderYUVSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLRenderYUVSource.m; sourceTree = "<group>"; };
+		F4908D1322ABB44A002566FF /* GLDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLDefine.h; sourceTree = "<group>"; };
+		F4908D1422ABB44A002566FF /* GLRenderRGBSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLRenderRGBSource.m; sourceTree = "<group>"; };
+		F4908D1522ABB44A002566FF /* CGImageUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CGImageUtils.m; sourceTree = "<group>"; };
+		F4908D1622ABB44A002566FF /* GLRenderYUVSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLRenderYUVSource.h; sourceTree = "<group>"; };
+		F4908D1722ABB44A002566FF /* GLFrameBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLFrameBuffer.h; sourceTree = "<group>"; };
+		F4908D1822ABB44A002566FF /* GLUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLUtils.m; sourceTree = "<group>"; };
+		F4908D1922ABB44A002566FF /* GLRenderSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLRenderSource.m; sourceTree = "<group>"; };
+		F4908D1A22ABB44B002566FF /* GLProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLProgram.m; sourceTree = "<group>"; };
+		F4908D1B22ABB44B002566FF /* GLContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLContext.m; sourceTree = "<group>"; };
+		F4908D2422ABB5C5002566FF /* GLVideoView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GLVideoView.h; sourceTree = "<group>"; };
+		F4908D2522ABB5C5002566FF /* GLVideoView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GLVideoView.m; sourceTree = "<group>"; };
+		F4908D2722ABB751002566FF /* YuvPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YuvPlayer.h; sourceTree = "<group>"; };
+		F4908D2822ABB751002566FF /* YuvPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YuvPlayer.m; sourceTree = "<group>"; };
+		F4908D2D22ADEBD3002566FF /* VideoFileSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoFileSource.h; sourceTree = "<group>"; };
+		F4908D2E22ADEBD3002566FF /* VideoFileSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoFileSource.m; sourceTree = "<group>"; };
+		F4D0B1F122B0BD8500195205 /* test-420P-320x160.yuv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test-420P-320x160.yuv"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +122,7 @@
 		F45E4680228A514E00C7DBF9 /* media */ = {
 			isa = PBXGroup;
 			children = (
+				F4908D0A22ABB3EF002566FF /* videoPlayer */,
 				F45E46DB228F87E600C7DBF9 /* fileResources */,
 				F45E46D4228F87CC00C7DBF9 /* AudioGroup */,
 				F45E4681228A514E00C7DBF9 /* AppDelegate.h */,
@@ -124,10 +163,42 @@
 		F45E46DB228F87E600C7DBF9 /* fileResources */ = {
 			isa = PBXGroup;
 			children = (
+				F4D0B1F122B0BD8500195205 /* test-420P-320x160.yuv */,
+				F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */,
 				F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */,
 				F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */,
 			);
 			path = fileResources;
+			sourceTree = "<group>";
+		};
+		F4908D0A22ABB3EF002566FF /* videoPlayer */ = {
+			isa = PBXGroup;
+			children = (
+				F4908D0C22ABB44A002566FF /* CGImageUtils.h */,
+				F4908D1522ABB44A002566FF /* CGImageUtils.m */,
+				F4908D1022ABB44A002566FF /* GLContext.h */,
+				F4908D1B22ABB44B002566FF /* GLContext.m */,
+				F4908D1322ABB44A002566FF /* GLDefine.h */,
+				F4908D1722ABB44A002566FF /* GLFrameBuffer.h */,
+				F4908D0E22ABB44A002566FF /* GLFrameBuffer.m */,
+				F4908D1122ABB44A002566FF /* GLProgram.h */,
+				F4908D1A22ABB44B002566FF /* GLProgram.m */,
+				F4908D0F22ABB44A002566FF /* GLRenderRGBSource.h */,
+				F4908D1422ABB44A002566FF /* GLRenderRGBSource.m */,
+				F4908D0D22ABB44A002566FF /* GLRenderSource.h */,
+				F4908D1922ABB44A002566FF /* GLRenderSource.m */,
+				F4908D1622ABB44A002566FF /* GLRenderYUVSource.h */,
+				F4908D1222ABB44A002566FF /* GLRenderYUVSource.m */,
+				F4908D0B22ABB44A002566FF /* GLUtils.h */,
+				F4908D1822ABB44A002566FF /* GLUtils.m */,
+				F4908D2422ABB5C5002566FF /* GLVideoView.h */,
+				F4908D2522ABB5C5002566FF /* GLVideoView.m */,
+				F4908D2722ABB751002566FF /* YuvPlayer.h */,
+				F4908D2822ABB751002566FF /* YuvPlayer.m */,
+				F4908D2D22ADEBD3002566FF /* VideoFileSource.h */,
+				F4908D2E22ADEBD3002566FF /* VideoFileSource.m */,
+			);
+			path = videoPlayer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -188,8 +259,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F45E468E228A514F00C7DBF9 /* LaunchScreen.storyboard in Resources */,
+				F4D0B1F222B0BD8500195205 /* test-420P-320x160.yuv in Resources */,
 				F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */,
 				F45E468B228A514F00C7DBF9 /* Assets.xcassets in Resources */,
+				F4358FEF2294ECB800D63289 /* test_441_s16le_2.amr in Resources */,
 				F45E46E7228F8AF600C7DBF9 /* test-mp3-1.mp3 in Resources */,
 				F45E4689228A514E00C7DBF9 /* Main.storyboard in Resources */,
 			);
@@ -204,14 +277,25 @@
 			files = (
 				F45E46E2228F884900C7DBF9 /* ADAVPlayer.m in Sources */,
 				F45E46E5228F888000C7DBF9 /* ADAVAudioPlayer.m in Sources */,
+				F4908D2622ABB5C5002566FF /* GLVideoView.m in Sources */,
+				F4908D2322ABB44B002566FF /* GLContext.m in Sources */,
 				F45E4686228A514E00C7DBF9 /* ViewController.m in Sources */,
+				F4908D1F22ABB44B002566FF /* CGImageUtils.m in Sources */,
 				F4358FD52290EBF100D63289 /* ADUnitTool.m in Sources */,
+				F4908D2222ABB44B002566FF /* GLProgram.m in Sources */,
 				F45E4691228A514F00C7DBF9 /* main.m in Sources */,
+				F4908D2F22ADEBD3002566FF /* VideoFileSource.m in Sources */,
+				F4908D1C22ABB44B002566FF /* GLFrameBuffer.m in Sources */,
 				F45E46D9228F87CC00C7DBF9 /* ADAudioUnitPlay.m in Sources */,
 				F4358FD82290EEF400D63289 /* ADAudioSession.m in Sources */,
+				F4908D2022ABB44B002566FF /* GLUtils.m in Sources */,
+				F4908D2922ABB751002566FF /* YuvPlayer.m in Sources */,
 				F45E4683228A514E00C7DBF9 /* AppDelegate.m in Sources */,
 				F4358FDB2290F11600D63289 /* BaseUnitPlayer.m in Sources */,
+				F4908D1D22ABB44B002566FF /* GLRenderYUVSource.m in Sources */,
 				F4358FDE2290F50A00D63289 /* AVAudioSession+extion.m in Sources */,
+				F4908D1E22ABB44B002566FF /* GLRenderRGBSource.m in Sources */,
+				F4908D2122ABB44B002566FF /* GLRenderSource.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -356,6 +440,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = AKBWT3F327;
 				INFOPLIST_FILE = media/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -373,6 +458,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = AKBWT3F327;
 				INFOPLIST_FILE = media/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

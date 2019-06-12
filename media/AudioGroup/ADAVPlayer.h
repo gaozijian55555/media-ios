@@ -22,7 +22,7 @@
 @property (strong, nonatomic) id timerObserver;
 @property (strong, nonatomic) AVPlayer *a1Player;
 
-- (void)initWithPath:(NSString*)path;
+- (void)initWithURL:(NSURL*)pathUrl;
 - (void)play;
 - (void)stop;
 @end
