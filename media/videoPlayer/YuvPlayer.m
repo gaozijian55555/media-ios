@@ -141,6 +141,7 @@ static YuvPlayer* defaultPlayer = nil;
             
             [self.renderView rendyuvFrame:frame];
             NSLog(@"结束渲染");
+            usleep(usec_per_fps);
         }
     }
     [self.lock unlock];
@@ -173,6 +174,9 @@ static YuvPlayer* defaultPlayer = nil;
     END_DISPATCH_MAIN_QUEUE
 }
 
+/** 1、遇到问题 free()栈内存引起的奔溃
+ *  这里的frame对象实际上是栈内存,所以不能用free()来释放，会引起奔溃。
+ */
 - (void)freeVideoFrame:(VideoFrame*)frame
 {
     if (frame != NULL) {
@@ -192,7 +196,8 @@ static YuvPlayer* defaultPlayer = nil;
             free(frame->cv_pixelbuffer);
             frame->cv_pixelbuffer = NULL;
         }
-        free(frame);
+        
+//        free(frame);
         frame = NULL;
     }
 }
@@ -233,11 +238,10 @@ static YuvPlayer* defaultPlayer = nil;
         return;
     }
     
-    
     pthread_mutex_lock(&_videoMutex);
     if([self isFull]){
-        pthread_mutex_unlock(&_videoMutex);
         [self freeVideoFrame:frame];
+        pthread_mutex_unlock(&_videoMutex);
         return;
     }
     _videoFrame[_tail] = frame;
@@ -250,6 +254,7 @@ static YuvPlayer* defaultPlayer = nil;
 
 - (void)clearCacheData
 {
+    NSLog(@"clearCacheData ");
     pthread_mutex_lock(&_videoMutex);
     for (int i=0; i<Video_cache_lenght; i++) {
         if (_videoFrame[i]->luma != NULL) {
