@@ -71,6 +71,9 @@
         size = fread(frame->chromaR, 1, self.width * self.height/4, yuvFile);
         if (size == 0) {
             NSLog(@"读取的数据字节为0");
+            if ([self.delegate respondsToSelector:@selector(didFinishVideoData)]) {
+                [self.delegate didFinishVideoData];
+            }
             break;
         }
         if ([self.delegate respondsToSelector:@selector(pushYUVFrame:)]) {

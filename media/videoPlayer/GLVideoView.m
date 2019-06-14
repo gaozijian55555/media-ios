@@ -95,4 +95,18 @@
         [self.context.context renderbufferStorage:GL_RENDERBUFFER fromDrawable:_mylayer];
     }
 }
+
+- (void)releaseSources
+{
+    if (self.yuvSource) {
+        [self.yuvSource releaseSources];
+        self.yuvSource = nil;
+    }
+    
+    if (_renderbuffer) {
+        glDeleteRenderbuffers(1, &_renderbuffer);
+        _renderbuffer = 0;
+    }
+    
+}
 @end

@@ -284,4 +284,15 @@ NSString *const yuvcolorFS = SHADER_STRING
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+
+- (void)releaseSources
+{
+    if (textureyuvs[0] != 0) {
+        glDeleteTextures(3, textureyuvs);
+    }
+    
+    [self cleanuptexture];
+    [self destroy];
+}
 @end

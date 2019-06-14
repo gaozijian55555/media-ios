@@ -12,6 +12,9 @@
 @protocol VideoFileSourceProtocol <NSObject>
 
 - (void)pushYUVFrame:(VideoFrame*)video;
+
+// 视频流没有了
+- (void)didFinishVideoData;
 @end
 
 @interface VideoFileSource : NSObject

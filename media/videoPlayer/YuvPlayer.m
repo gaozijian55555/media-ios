@@ -31,6 +31,7 @@
 
 @property (assign, nonatomic) BOOL mRun;
 @property (assign, nonatomic) BOOL mRenderThreadRun;
+@property (assign, nonatomic) BOOL mVideoDidFnish;
 
 // 渲染线程，当视频缓存区没有可以用于解码的数据时休眠
 @property(nonatomic,strong)NSThread *renderThread;
@@ -127,7 +128,7 @@ static YuvPlayer* defaultPlayer = nil;
     NSLog(@"decodeThreadRunloop begin");
     [self.lock lock];
     self.mRenderThreadRun = YES;
-    while (![NSThread currentThread].isCancelled) {
+    while (![NSThread currentThread].isCancelled &&(![self isEmpty] || !self.mVideoDidFnish)) {
         @autoreleasepool {
             NSLog(@"开始渲染");
             VideoFrame *frame = NULL;
@@ -149,6 +150,12 @@ static YuvPlayer* defaultPlayer = nil;
     }
     [self.lock unlock];
     NSLog(@"decodeThreadRunloop end");
+}
+
+- (void)didFinishVideoData
+{
+    NSLog(@"播放完毕");
+    self.mVideoDidFnish = YES;
 }
 
 - (void)pushYUVFrame:(VideoFrame *)video
@@ -183,6 +190,7 @@ static YuvPlayer* defaultPlayer = nil;
  */
 - (void)freeVideoFrame:(VideoFrame*)frame
 {
+    pthread_mutex_lock(&_videoMutex);
     if (frame != NULL) {
         if (frame->luma != NULL) {
             free(frame->luma);
@@ -204,6 +212,7 @@ static YuvPlayer* defaultPlayer = nil;
         free(frame);
         frame = NULL;
     }
+    pthread_mutex_unlock(&_videoMutex);
 }
 
 - (void)pullVideo:(VideoFrame**)frame
@@ -238,6 +247,10 @@ static YuvPlayer* defaultPlayer = nil;
 {
     return _count == Video_cache_lenght;
 }
+- (BOOL)isEmpty
+{
+    return _count == 0;
+}
 - (void)addVideo:(VideoFrame*)frame
 {
     if (frame == NULL) {
@@ -248,8 +261,8 @@ static YuvPlayer* defaultPlayer = nil;
     pthread_mutex_lock(&_videoMutex);
     if([self isFull]){
         NSLog(@"缓冲区满了 丢弃帧");
-        [self freeVideoFrame:frame];
         pthread_mutex_unlock(&_videoMutex);
+        [self freeVideoFrame:frame];
         return;
     }
     _videoFrame[_tail] = frame;
@@ -264,7 +277,7 @@ static YuvPlayer* defaultPlayer = nil;
 {
     NSLog(@"clearCacheData ");
     pthread_mutex_lock(&_videoMutex);
-    for (int i=0; i<Video_cache_lenght; i++) {
+    for (int i=0; i<_count; i++) {
         if (_videoFrame[i]->luma != NULL) {
             free(_videoFrame[i]->luma);
             _videoFrame[i]->luma = NULL;
@@ -281,6 +294,8 @@ static YuvPlayer* defaultPlayer = nil;
             free(_videoFrame[i]->cv_pixelbuffer);
             _videoFrame[i]->cv_pixelbuffer = NULL;
         }
+        free(_videoFrame[i]);
+        _videoFrame[i] = NULL;
     }
     _count = 0;
     _head = 0;

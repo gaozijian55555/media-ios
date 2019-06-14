@@ -12,4 +12,6 @@
 @interface GLVideoView : UIView
 
 - (void)rendyuvFrame:(VideoFrame*)yuvFrame;
+
+- (void)releaseSources;
 @end

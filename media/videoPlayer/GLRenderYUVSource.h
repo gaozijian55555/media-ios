@@ -23,4 +23,5 @@
 // 渲染
 - (void)renderpass;
 
+- (void)releaseSources;
 @end
