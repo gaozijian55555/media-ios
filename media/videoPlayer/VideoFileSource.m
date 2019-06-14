@@ -58,19 +58,23 @@
     while (![NSThread currentThread].isCancelled) {
         
         // 读取YUV420 planner格式的视频数据，其一帧视频数据的大小为 宽*高*3/2;
-        VideoFrame frame = {0};
-        frame.luma = (uint8_t*)malloc(self.width * self.height);
-        frame.chromaB = (uint8_t*)malloc(self.width * self.height/4);
-        frame.chromaR = (uint8_t*)malloc(self.width * self.height/4);
-        frame.width = self.width;
-        frame.height = self.height;
+        VideoFrame *frame = (VideoFrame*)malloc(sizeof(VideoFrame));
+        frame->luma = (uint8_t*)malloc(self.width * self.height);
+        frame->chromaB = (uint8_t*)malloc(self.width * self.height/4);
+        frame->chromaR = (uint8_t*)malloc(self.width * self.height/4);
+        frame->width = self.width;
+        frame->height = self.height;
+        frame->cv_pixelbuffer = NULL;
         
-        fread(frame.luma, 1, self.width * self.height, yuvFile);
-        fread(frame.chromaB, 1, self.width * self.height/4, yuvFile);
-        fread(frame.chromaR, 1, self.width * self.height/4, yuvFile);
-        
+        size_t size = fread(frame->luma, 1, self.width * self.height, yuvFile);
+        size = fread(frame->chromaB, 1, self.width * self.height/4, yuvFile);
+        size = fread(frame->chromaR, 1, self.width * self.height/4, yuvFile);
+        if (size == 0) {
+            NSLog(@"读取的数据字节为0");
+            break;
+        }
         if ([self.delegate respondsToSelector:@selector(pushYUVFrame:)]) {
-            [self.delegate pushYUVFrame:&frame];
+            [self.delegate pushYUVFrame:frame];
         }
         
         // 写入速度比渲染速度快一些

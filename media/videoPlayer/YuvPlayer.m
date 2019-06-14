@@ -133,14 +133,17 @@ static YuvPlayer* defaultPlayer = nil;
             VideoFrame *frame = NULL;
             [self pullVideo:&frame];
             
-            if (frame == NULL) {  //说明暂时没有视频数据
+            if (frame && frame->luma == NULL) {  //说明暂时没有视频数据
                 NSLog(@"没有数据");
                 continue;
             }
             
-            
             [self.renderView rendyuvFrame:frame];
             NSLog(@"结束渲染");
+            // 用完后释放内存
+            if (frame) {
+                [self freeVideoFrame:frame];
+            }
             usleep(usec_per_fps);
         }
     }
@@ -158,6 +161,7 @@ static YuvPlayer* defaultPlayer = nil;
     if (_mRenderThreadRun) {
         [self addVideo:video];
     } else {
+        NSLog(@"渲染线程没有运行，先清除缓冲");
         [self clearCacheData];
     }
 }
@@ -197,7 +201,7 @@ static YuvPlayer* defaultPlayer = nil;
             frame->cv_pixelbuffer = NULL;
         }
         
-//        free(frame);
+        free(frame);
         frame = NULL;
     }
 }
@@ -206,6 +210,7 @@ static YuvPlayer* defaultPlayer = nil;
 {
     pthread_mutex_lock(&_videoMutex);
     if(_count == 0) {
+        NSLog(@"缓冲区没数据了 ");
         struct timeval tv;
         gettimeofday(&tv, NULL);
         
@@ -216,8 +221,10 @@ static YuvPlayer* defaultPlayer = nil;
         if(_count == 0){
             pthread_mutex_unlock(&_videoMutex);
             *frame = NULL;
+            return;
         }
     }
+    NSLog(@"缓冲区中数据个数 %d",_count);
     VideoFrame *tmp = NULL;
     tmp = _videoFrame[_head];
     *frame = tmp;
@@ -240,6 +247,7 @@ static YuvPlayer* defaultPlayer = nil;
     
     pthread_mutex_lock(&_videoMutex);
     if([self isFull]){
+        NSLog(@"缓冲区满了 丢弃帧");
         [self freeVideoFrame:frame];
         pthread_mutex_unlock(&_videoMutex);
         return;

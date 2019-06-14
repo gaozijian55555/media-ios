@@ -17,7 +17,7 @@
     GLuint _framebuffer;
     GLuint _renderbuffer;
     int _renderWidth,_renderHeight;
-    
+    CAEAGLLayer *_mylayer;
     
 }
 @property (strong, nonatomic)GLContext *context;
@@ -34,8 +34,8 @@
 {
     if (self = [super initWithFrame:frame]) {
         
-        CAEAGLLayer *layer = (CAEAGLLayer*)self.layer;
-        self.context = [[GLContext alloc] initDefaultContextLayer:layer];
+        _mylayer = (CAEAGLLayer*)self.layer;
+        self.context = [[GLContext alloc] initDefaultContextLayer:_mylayer];
         [self.context useAsCurrentContext];
         
         CGSize rSize = self.frame.size;
@@ -92,7 +92,7 @@
         
         GLuint framebufer = [self.yuvSource outputFramebuffer].framebuffer;
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,framebufer);
-        [self.context.context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
+        [self.context.context renderbufferStorage:GL_RENDERBUFFER fromDrawable:_mylayer];
     }
 }
 @end

@@ -168,7 +168,7 @@ NSString *const yuvcolorFS = SHADER_STRING
 
 - (void)loadTextureNormal:(VideoFrame*)frame
 {
-    BOOL hasGenTexutre = NO;
+    BOOL hasGenTexutre = YES;
     // texture id不用重复生成，可以复用
     if (textureyuvs[0] == 0 || _lastInTexWidth != frame->width || _lastIntexHeight != frame->height) {
         
