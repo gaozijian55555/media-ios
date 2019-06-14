@@ -35,18 +35,20 @@ GLFrameBufferTextureOptions defaultOptionsForTexture(){
 @synthesize size = _size;
 @synthesize textureOptions = _textureOptions;
 @synthesize texture = _texture;
+@synthesize framebuffer = framebuffer;
 
-- (id)initDefaultBufferWithContext:(GLContext*)context
+- (id)initDefaultBufferWithContext:(GLContext*)context offscreen:(BOOL)offscreen
 {
-    return [self initWithContext:context bufferSize:CGSizeMake(1280, 720)];
+    return [self initWithContext:context bufferSize:CGSizeMake(1280, 720) offscreen:offscreen];
 }
 
-- (id)initWithContext:(GLContext *)context bufferSize:(CGSize)size
+- (id)initWithContext:(GLContext *)context bufferSize:(CGSize)size offscreen:(BOOL)offscreen
 {
     if (self = [super init]) {
         _size = size;
         _context = context;
         _textureOptions = defaultOptionsForTexture();
+        _isOffscreenRender = offscreen;
         [self generateFrameBuffer];
     }
     return self;
@@ -70,6 +72,11 @@ GLFrameBufferTextureOptions defaultOptionsForTexture(){
     
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    
+    if (!self.isOffscreenRender) {
+        NSLog(@"非离屏渲染FBO,直接返回");
+        return;
+    }
     
     if ([GLContext supportsFastTextureUpload]) {
         CVOpenGLESTextureCacheRef textureCache = [_context coreVideoTextureCache];

@@ -50,10 +50,11 @@
         return;
     }
     if (self.width <= 0 || self.height <= 0) {
-        NSLog(@"");
+        NSLog(@"宽度和高度不能为 0");
+        return;
     }
     
-    
+    NSLog(@"开始 拉取视频");
     while (![NSThread currentThread].isCancelled) {
         
         // 读取YUV420 planner格式的视频数据，其一帧视频数据的大小为 宽*高*3/2;
@@ -73,8 +74,9 @@
         }
         
         // 写入速度比渲染速度快一些
-        usleep(usec_per_fps * 0.8);
+        usleep(usec_per_fps);
     }
+    NSLog(@"结束 拉取视频");
 }
 
 - (void)stop

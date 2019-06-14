@@ -14,8 +14,9 @@
 
 @interface GLRenderYUVSource : GLRenderSource
 
-// 初始化方法
-- (id)initWithContext:(GLContext*)context;
+// 初始化方法 context 上下文；rSize:帧缓冲区大小(单位像素)
+- (id)initWithContext:(GLContext*)context
+       withRenderSize:(CGSize)rSize;
 
 // 上传纹理
 - (void)loadYUVFrame:(VideoFrame*)frame;

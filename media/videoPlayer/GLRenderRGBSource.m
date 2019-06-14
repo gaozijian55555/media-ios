@@ -91,7 +91,7 @@ const float texcoords[8] = {
     }
     
     CGSize size = CGSizeMake(self.renderWidth, self.renderHeight);
-    outputFramebuffer = [[GLFrameBuffer alloc] initWithContext:self.context bufferSize:size];
+    outputFramebuffer = [[GLFrameBuffer alloc] initWithContext:self.context bufferSize:size offscreen:NO];
 }
 
 - (void)loadRGBPixelBuffer:(void*)buffer width:(int)width height:(int)height

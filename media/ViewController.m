@@ -33,21 +33,28 @@
     
 //    [self playPCM];
     
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
     
     // ======= 播放yuv视频  =========== //
-    NSString *lpath = [[NSBundle mainBundle] pathForResource:@"test-420P-320x160" ofType:@"yuv"];
-    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(1000, 200, 320, 160)];
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(25, 10, 640, 320)];
     view.backgroundColor = [UIColor redColor];
     [self.view addSubview:view];
+    
     // 初始化播放器
     YuvPlayer *player = [YuvPlayer shareInstance];
     [player setVideoView:view];
     [player play];
+    
     // 初始化视频源
+    NSString *lpath = [[NSBundle mainBundle] pathForResource:@"test-420P-320x160" ofType:@"yuv"];
     NSURL *fileUrl = [NSURL fileURLWithPath:lpath];
     self.source = [[VideoFileSource alloc] initWithFileUrl:fileUrl];
     self.source.delegate = player;
-    [self.source setVideoWidth:640 height:360];
+    [self.source setVideoWidth:320 height:160];
     [self.source beginPullVideo];
     // ======= 播放yuv视频  =========== //
 }

@@ -33,18 +33,18 @@
     NSMutableArray *renderTargets;
 }
 @property (strong, nonatomic) GLContext *context;
+@property (assign, nonatomic) BOOL isOffscreenSource;
 
 - (id)initWithContext:(GLContext*)context;
+
 - (void)addTarget:(id<GLRenderSourceInput>)source;
 - (void)removeAllTargets;
 - (void)destroy;
 
 // 绘制结束后，通知下一个节点处理，不绘制到屏幕上
 - (void)notifyRenderFinish;
-// 直接将渲染结果绘制到屏幕上
-- (void)renderToScreen;
 
-// 清楚output frame buffer
+// 清除output frame buffer
 - (void)removeOutputframebuffer;
 - (GLFrameBuffer*)outputFramebuffer;
 

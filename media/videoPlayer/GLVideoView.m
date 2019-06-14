@@ -12,51 +12,17 @@
 #import "GLProgram.h"
 #import "GLRenderYUVSource.h"
 
-NSString *const comvs = SHADER_STRING
-(
- attribute vec4 position;
- attribute vec2 texcoord;
- 
- varying highp vec2 tex_coord;
- 
- void main(){
-     gl_Position = position;
-     tex_coord = texcoord;
- }
- );
-
-// 获取一张图片的颜色
-NSString *const comfs = SHADER_STRING
-(
- uniform sampler2D texture;
- 
- varying highp vec2 tex_coord;
- 
- void main(){
-     gl_FragColor = texture2D(texture,tex_coord);
- }
- );
-
-const float compositions[8] = {
-    -1.0,-1.0,
-    1.0,-1.0,
-    -1.0,1.0,
-    1.0,1.0
-};
-const float comtexcoords[8] = {
-    0.0,0.0,
-    1.0,0.0,
-    0.0,1.0,
-    1.0,1.0
-};
-
 @interface GLVideoView ()
 {
+    GLuint _framebuffer;
     GLuint _renderbuffer;
+    int _renderWidth,_renderHeight;
+    
+    
 }
 @property (strong, nonatomic)GLContext *context;
 @property (strong, nonatomic)GLRenderYUVSource *yuvSource;
-@property (strong, nonatomic)GLProgram *renderProgram;
+
 @end
 @implementation GLVideoView
 + (Class)layerClass;
@@ -67,38 +33,66 @@ const float comtexcoords[8] = {
 - (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {
+        
         CAEAGLLayer *layer = (CAEAGLLayer*)self.layer;
         self.context = [[GLContext alloc] initDefaultContextLayer:layer];
         [self.context useAsCurrentContext];
         
-        self.yuvSource = [[GLRenderYUVSource alloc] initWithContext:self.context];
-        self.renderProgram = [[GLProgram alloc] initWithVertexShaderType:comvs fragShader:comfs];
+        CGSize rSize = self.frame.size;
+        _renderWidth = rSize.width * self.layer.contentsScale;
+        _renderHeight = rSize.height * self.layer.contentsScale;
     }
     
     return self;
 }
 
-
-- (void)setupRenderbuffer
-{
-    glGenRenderbuffers(1, &_renderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, _renderbuffer);
-    [self.context.context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
-}
 - (void)rendyuvFrame:(VideoFrame*)yuvFrame
 {
     if (yuvFrame == NULL) {
         return;
     }
     
+    // 切换上下文
+    [self.context useAsCurrentContext];
+    
+    if (!self.yuvSource) {
+        CGSize rSize = CGSizeMake(_renderWidth, _renderHeight);
+        self.yuvSource = [[GLRenderYUVSource alloc] initWithContext:self.context withRenderSize:rSize];
+        self.yuvSource.isOffscreenSource = NO;
+    }
+    
     // 上传纹理
     [self.yuvSource loadYUVFrame:yuvFrame];
+    
+    // 激活当前帧缓冲区
+    [self setupFramebufferRenderBuffer];
     
     // 渲染
     [self.yuvSource renderpass];
     
     // 呈现到屏幕上
     [self.context presentForDisplay];
+    
+    
+//    NSString *file  = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+//    file = [file stringByAppendingPathComponent:@"1.jpg"];
+//    NSLog(@"保存路径 %@",file);
+//
+//    CGImageRef imgref = [self.yuvSource.outputFramebuffer newCGImageFromFramebufferContents];
+//    UIImage *image = [[UIImage alloc] initWithCGImage:imgref];
+//    NSData *imgData = UIImageJPEGRepresentation(image, 1.0);
+//    [imgData writeToFile:file atomically:YES];
+}
+
+- (void)setupFramebufferRenderBuffer
+{
+    if (!_renderbuffer) {
+        glGenRenderbuffers(1, &_renderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, _renderbuffer);
+        
+        GLuint framebufer = [self.yuvSource outputFramebuffer].framebuffer;
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,framebufer);
+        [self.context.context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
+    }
 }
 @end

@@ -8,6 +8,10 @@
 
 #import "GLRenderYUVSource.h"
 
+/** 1、遇到问题 视频倒立
+ *  解决思路：经过ffmpeg解码后的视频帧(一张图片)，它在内存中的存储是以左上角为原点进行存储的(也就与屏幕坐标系一致)
+ *  但是opengl es中纹理坐标系左下角是原点,也就是上下颠倒的，所以传递时就必须按照opengl es的纹理坐标系顺序来。
+ */
 static float posionData[8] =
 {
     -1.0,-1.0,
@@ -17,10 +21,10 @@ static float posionData[8] =
 };
 static float texcoordData[8] =
 {
-    0.0,0.0,
-    1.0,0.0,
     0.0,1.0,
-    1.0,1.0
+    1.0,1.0,
+    0.0,0.0,
+    1.0,0.0
 };
 
 /** BT.709  RGB和YUV(video range、full range)转换矩阵
@@ -83,7 +87,7 @@ NSString *const yuvcolorFS = SHADER_STRING
                                 texture2D(texture_v,v_texcoord).r - 0.5,
                                 1.0)*luminanceScale.y;
     highp vec4 color_rgb = yuvToRGBmatrix * color_yuv;
-    gl_FragColor = vec4(color_rgb.xyz,color_yuv.x * yuvToRGBmatrix[0][0]);
+     gl_FragColor = color_rgb;
  }
 );
 
@@ -97,6 +101,8 @@ NSString *const yuvcolorFS = SHADER_STRING
     
     // 上一次输入纹理的宽和高，当要渲染的纹理的宽和高改变时，就需要重新通过glTexImage2D()函数分配内存了
     int _lastInTexWidth,_lastIntexHeight;
+    // 渲染区域的宽和高，和纹理的宽高不一定相同
+    int _renderWidth,_renderHeight;
     
     // 着色器中变量地址
     GLuint _samplers[3];
@@ -107,17 +113,20 @@ NSString *const yuvcolorFS = SHADER_STRING
     
     // 是否full range
     BOOL isfullrange;
-    
 }
 @property (strong, nonatomic) GLProgram *yuvprogram;
 @end
 @implementation GLRenderYUVSource
 
-- (id)initWithContext:(GLContext *)context
+- (id)initWithContext:(GLContext *)context withRenderSize:(CGSize)rSize
 {
     if (self = [super init]) {
         self.context = context;
-        self.yuvprogram = [[GLProgram alloc] initWithVertexShaderType:yuvVS fragShader:yuvcolorFS];
+        
+        _lastInTexWidth = 1280;
+        _lastIntexHeight = 720;
+        _renderWidth = rSize.width;
+        _renderHeight = rSize.height;
     }
     
     return self;
@@ -131,7 +140,7 @@ NSString *const yuvcolorFS = SHADER_STRING
     }
     
     // 有可能播放的过程中 视频帧的分辨率改变了，那么这时候需要重新配置渲染缓冲区的大小
-    [self configOutputFramebuffer:frame];
+    [self configOutputFramebuffer];
     
     if (frame->cv_pixelbuffer != NULL) {  // 基于CVOpenGLESTextureCacheRef的纹理缓冲系统上传纹理
         [self loadTextureByFastup:frame];
@@ -140,22 +149,26 @@ NSString *const yuvcolorFS = SHADER_STRING
     }
 }
 
-- (void)configOutputFramebuffer:(VideoFrame*)frame
+- (void)configOutputFramebuffer
 {
-    CGSize size = self.outputFramebuffer.size;
-    int width = size.width;
-    int height = size.height;
-    if (width != frame->width || height != frame->height) {
-        [outputFramebuffer destroyFramebuffer];
-        
-        CGSize newSize = CGSizeMake(frame->width, frame->height);
-        outputFramebuffer = [[GLFrameBuffer alloc] initWithContext:self.context bufferSize:newSize];
+    if (self.isOffscreenSource) {
+        if (_renderWidth != _lastInTexWidth || _renderHeight != _lastIntexHeight) {
+            [outputFramebuffer destroyFramebuffer];
+            
+            CGSize newSize = CGSizeMake(_renderWidth, _renderHeight);
+            outputFramebuffer = [[GLFrameBuffer alloc] initWithContext:self.context bufferSize:newSize offscreen:NO];
+        }
+    } else {
+        if (outputFramebuffer == nil) {
+            CGSize newSize = CGSizeMake(_renderWidth, _renderHeight);
+            outputFramebuffer = [[GLFrameBuffer alloc] initWithContext:self.context bufferSize:newSize offscreen:NO];
+        }
     }
 }
 
 - (void)loadTextureNormal:(VideoFrame*)frame
 {
-    BOOL hasGenTexutre = YES;
+    BOOL hasGenTexutre = NO;
     // texture id不用重复生成，可以复用
     if (textureyuvs[0] == 0 || _lastInTexWidth != frame->width || _lastIntexHeight != frame->height) {
         
@@ -213,7 +226,7 @@ NSString *const yuvcolorFS = SHADER_STRING
     [outputFramebuffer activateFramebuffer];
     
     //clear
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
     [self activeCurrentProgram];
@@ -242,20 +255,15 @@ NSString *const yuvcolorFS = SHADER_STRING
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
-    NSString *file  = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    file = [file stringByAppendingPathComponent:@"1.jpg"];
-    NSLog(@"保存路径 %@",file);
-    
-    CGImageRef imgref = [outputFramebuffer newCGImageFromFramebufferContents];
-    UIImage *image = [[UIImage alloc] initWithCGImage:imgref];
-    NSData *imgData = UIImageJPEGRepresentation(image, 1.0);
-    [imgData writeToFile:file atomically:YES];
-    
-    [self cleanuptexture];
+//    [self cleanuptexture];
 }
 
 - (void)activeCurrentProgram
 {
+    if (!self.yuvprogram) {
+        self.yuvprogram = [[GLProgram alloc] initWithVertexShaderType:yuvVS fragShader:yuvcolorFS];
+    }
+    
     [self.yuvprogram use];
     
     if (_postion == 0) {
