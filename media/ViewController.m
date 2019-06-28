@@ -7,93 +7,47 @@
 //
 
 #import "ViewController.h"
-#import "ADAudioUnitPlay.h"
-#import "ADAVPlayer.h"
-#import "ADAVAudioPlayer.h"
-#import "BaseUnitPlayer.h"
-#import "YuvPlayer.h"
-#import "VideoFileSource.h"
+#import "Activities/AudioPlayerViewController.h"
+#import "Activities/VideoPlayerViewController.h"
+#import "Activities/AudioRecorderViewController.h"
 
 @interface ViewController ()
-@property (strong, nonatomic) ADAudioUnitPlay *unitPlay;
-@property (strong, nonatomic) BaseUnitPlayer  *basePlay;
-@property (strong, nonatomic) ADAVAudioPlayer *audioPlayer;
-@property (strong, nonatomic) ADAVPlayer *avPlayer;
 
-@property(nonatomic,strong)VideoFileSource *source;
+- (IBAction)audioPlay:(id)sender;
+- (IBAction)videoPlay:(id)sender;
+- (IBAction)audioRecord:(id)sender;
+- (IBAction)videoRecord:(id)sender;
+
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-//    [self playByAVAudioPlayer];
-//    [self playByAVPlayer];
-    
-//    [self playPCM];
-    
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
-    // ======= 播放yuv视频  =========== //
-    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(25, 10, 640, 320)];
-    view.backgroundColor = [UIColor redColor];
-    [self.view addSubview:view];
-    
-    // 初始化播放器
-    YuvPlayer *player = [YuvPlayer shareInstance];
-    [player setVideoView:view];
-    [player play];
-    
-    // 初始化视频源
-    NSString *lpath = [[NSBundle mainBundle] pathForResource:@"test-420P-320x160" ofType:@"yuv"];
-    NSURL *fileUrl = [NSURL fileURLWithPath:lpath];
-    self.source = [[VideoFileSource alloc] initWithFileUrl:fileUrl];
-    self.source.delegate = player;
-    [self.source setVideoWidth:320 height:160];
-    [self.source beginPullVideo];
-    // ======= 播放yuv视频  =========== //
 }
 
-- (void)playByAVAudioPlayer
-{
-    self.audioPlayer = [[ADAVAudioPlayer alloc] init];
-    NSString *lpath = [[NSBundle mainBundle] pathForResource:@"test-mp3-1" ofType:@"mp3"];
-    [self.audioPlayer initWithPath:lpath];
-    [self.audioPlayer play];
+- (IBAction)audioPlay:(id)sender {
+    AudioPlayerViewController *vc = [[AudioPlayerViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
 }
 
-- (void)playByAVPlayer
-{
-    self.avPlayer = [[ADAVPlayer alloc] init];
-    
-    // 注意如果是本地的这里要用fileURLWithxxx；远程的则用urlWithxxx，否则url协议解析会出错
-    // 可以播放远程在线文件
-    NSString *rPath = @"https://img.flypie.net/test-mp3-1.mp3";
-    NSURL *remoteUrl = [NSURL URLWithString:rPath];
-    
-    // 本地文件
-    NSString *lpath = [[NSBundle mainBundle] pathForResource:@"test-mp3-1" ofType:@"mp3"];
-    NSURL *localUrl = [NSURL URLWithString:lpath];
-    
-    [self.avPlayer initWithURL:remoteUrl];
-    [self.avPlayer play];
+- (IBAction)videoPlay:(id)sender {
+    VideoPlayerViewController *vc = [[VideoPlayerViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
 }
 
-- (void)playPCM
-{
-//    NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test_441_f32le_2" ofType:@"pcm"];
-    NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test_441_s16le_2" ofType:@"amr"];
-    
-//    self.basePlay = [[BaseUnitPlayer alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved path:l1path];
-//    [self.basePlay play];
-    
-//    self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked path:l1path];
-    self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked path:l1path];
-    [self.unitPlay play];
+- (IBAction)audioRecord:(id)sender {
+    AudioRecorderViewController *vc = [[AudioRecorderViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (IBAction)videoRecord:(id)sender {
+    AudioPlayerViewController *vc = [[AudioPlayerViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
 }
 @end

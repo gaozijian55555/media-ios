@@ -57,42 +57,44 @@
 
 /** AudioStreamBasicDescription详解，它用来描述对应的AudioUnit在处理数据时所需要的数据格式
  *  mSampleRate:音频的采样率，一般有44.1khz，48khz等
- *  mFormatID:编码类型
- *  mFormatFlags:采样格式及存储方式，ios支持两种采样格式(Float，32位，Signed Integer 32)；存储方式就是(Interleaved)Packet和(NonInterleaved)Planner，前者表示每个声道数据交叉存储在AudioBufferList的mBuffers[0]中，后者表示每个声道数据分开存储在mBuffers[i]中
- *  mBitsPerChannel:32(因为ios只有32位的采样格式)*8;一个channel就是个采样
- *  mChannelsPerFrame:声道数
- *  mBytesPerFrame:对于packet包，因为是交叉存储，所以一个frame中有n个channels =mBitsPerChannel*channels
- *  对于planner，因为分开存储在mBuffers[i]中， =mBitsPerChannel
- *  mFramesPerPacket:对于原始数据，一个packet就是包含一个frame；对于压缩数据，一个packet包含多个frame
- *  (不同编码类型，数目不一样，比如aac编码，一个packet包含1024个frame)
- *  mBytesPerPacket:=mBytesPerFrame*mFramesPerPacket
+ *  mFormatID:编码类型，比如一般采集的原始音频编码就为kAudioFormatLinearPCM
+ *  mFormatFlags:采样格式及存储方式，ios支持两种采样格式(Float，32位，Signed Integer 32)；存储方式就是(Interleaved)Packet和(NonInterleaved)Planner，前者表示每个声道
+    数据交叉存储在AudioBufferList的mBuffers[0]中，后者表示每个声道数据分开存储在mBuffers[i]中
+ *  mBitsPerChannel:每个声道所占位数，32(因为ios只有32位的采样格式);一个声道就是一个采样
+ *  mChannelsPerFrame:每个Frame的声道数；Packet格式，一个Frame包含多个声道，Planner格式，一个Frame包含一个声道
+ *  mBytesPerFrame:每个Frame的字节数，对于packet包，因为是交叉存储，所以一个frame中有n个channels，计算公式为：
+ *  =mBitsPerChannel/8*channels；对于planner， 计算公式为：=mBitsPerChannel/8
+ *  mFramesPerPacket:每个Packet的Frame数目；对于原始数据，一个packet就是包含一个frame；对于压缩数据，一个packet
+ *  包含多个frame(不同编码类型，数目不一样，比如aac编码，一个packet包含1024个frame)
+ *  mBytesPerPacket:每个Packet的字节数，计算公式为：=mBytesPerFrame*mFramesPerPacket
+ *
+ *  Tips：
+ *  一个Packet对应AudioBufferList的mBuffers中的一个元素，每个Packet包含一个或者多个Frame，每个Frame包含一个
+ *  或者多个Channel，一个Channel就是一个采样。
  */
 + (AudioStreamBasicDescription)streamDesWithLinearPCMformat:(AudioFormatFlags)flags sampleRate:(CGFloat)rate channels:(NSInteger)chs
 {
     
     // 设置数据格式 ios只支持16位整形和32位浮点型
-    UInt32 bytesPerSample = 4;
-    if (flags & kAudioFormatFlagIsSignedInteger) {
-        bytesPerSample = 2;
-    }
+    UInt32 bytesPerChannel = 4;
     BOOL isPlanner = flags & kAudioFormatFlagIsNonInterleaved;
     
     AudioStreamBasicDescription asbd;
     bzero(&asbd, sizeof(asbd));
     asbd.mSampleRate = rate;   // 采样率
     asbd.mFormatID = kAudioFormatLinearPCM; // 编码格式
-    //    odes.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;  //采样格式及存储方式
-    asbd.mFormatFlags = flags;
-    asbd.mBitsPerChannel = 8 * bytesPerSample;
-    asbd.mChannelsPerFrame = (UInt32)chs; // 双声道
+//    asbd.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+    asbd.mFormatFlags = flags;//采样格式及存储方式
+    asbd.mBitsPerChannel = 8 * bytesPerChannel;
+    asbd.mChannelsPerFrame = (UInt32)chs; // 声道数
     if (isPlanner) {
-        asbd.mBytesPerFrame = bytesPerSample;//planner存储格式 一个采样字节数
-        asbd.mFramesPerPacket = 1;      // 因为前面是kAudioFormatLinearPCM编码格式
-        asbd.mBytesPerPacket = asbd.mFramesPerPacket*asbd.mBytesPerFrame;  // 因为一个packet中只有一个frame
+        asbd.mBytesPerFrame = bytesPerChannel;//planner格式 每个Frame只是包含一个Channel
+        asbd.mFramesPerPacket = 1; // 因为前面是kAudioFormatLinearPCM编码格式，所以一个packet中只有一个frame
+        asbd.mBytesPerPacket = asbd.mFramesPerPacket*asbd.mBytesPerFrame;
     } else {
-        asbd.mBytesPerFrame = (UInt32)chs*bytesPerSample;//因为是packet存储格式 声道数*采样字节数
-        asbd.mFramesPerPacket = 1;      // 因为前面是kAudioFormatLinearPCM编码格式
-        asbd.mBytesPerPacket = asbd.mFramesPerPacket*asbd.mBytesPerFrame;  // 因为一个packet中只有一个frame
+        asbd.mBytesPerFrame = (UInt32)chs*bytesPerChannel;//packet格式 每个frame包含多个Channel
+        asbd.mFramesPerPacket = 1; // 因为前面是kAudioFormatLinearPCM编码格式，所以一个packet中只有一个frame
+        asbd.mBytesPerPacket = asbd.mFramesPerPacket*asbd.mBytesPerFrame;
     }
     
     return asbd;

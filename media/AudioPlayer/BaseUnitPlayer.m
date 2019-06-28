@@ -18,6 +18,7 @@
         [self initInputStream:path];
         [self createAudioComponentDesctription];
         [self createAudioUnitByAudioComponentInstanceNew];
+        [self setAudioUnitProperties];
         
     }
     return self;

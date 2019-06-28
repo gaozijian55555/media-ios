@@ -7,12 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F4358FD52290EBF100D63289 /* ADUnitTool.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FD42290EBF100D63289 /* ADUnitTool.m */; };
-		F4358FD82290EEF400D63289 /* ADAudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FD72290EEF400D63289 /* ADAudioSession.m */; };
 		F4358FDB2290F11600D63289 /* BaseUnitPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */; };
-		F4358FDE2290F50A00D63289 /* AVAudioSession+extion.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */; };
 		F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */ = {isa = PBXBuildFile; fileRef = F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */; };
 		F4358FEF2294ECB800D63289 /* test_441_s16le_2.amr in Resources */ = {isa = PBXBuildFile; fileRef = F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */; };
+		F4472DE822C22F9B00C52CCC /* ADAudioSession.m in Sources */ = {isa = PBXBuildFile; fileRef = F4472DE622C22F9B00C52CCC /* ADAudioSession.m */; };
+		F44F230322C32BD400A58FD0 /* AudioDataWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = F44F230222C32BD400A58FD0 /* AudioDataWriter.m */; };
 		F45E4683228A514E00C7DBF9 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4682228A514E00C7DBF9 /* AppDelegate.m */; };
 		F45E4686228A514E00C7DBF9 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E4685228A514E00C7DBF9 /* ViewController.m */; };
 		F45E4689228A514E00C7DBF9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F45E4687228A514E00C7DBF9 /* Main.storyboard */; };
@@ -35,20 +34,23 @@
 		F4908D2922ABB751002566FF /* YuvPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D2822ABB751002566FF /* YuvPlayer.m */; };
 		F4908D2F22ADEBD3002566FF /* VideoFileSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D2E22ADEBD3002566FF /* VideoFileSource.m */; };
 		F4D0B1F222B0BD8500195205 /* test-420P-320x160.yuv in Resources */ = {isa = PBXBuildFile; fileRef = F4D0B1F122B0BD8500195205 /* test-420P-320x160.yuv */; };
+		F4E1470722C0776600FB1D13 /* AVAudioSession+extion.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E1470322C0776500FB1D13 /* AVAudioSession+extion.m */; };
+		F4E1470822C0776600FB1D13 /* ADUnitTool.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E1470522C0776600FB1D13 /* ADUnitTool.m */; };
+		F4E1470B22C077D400FB1D13 /* AudioUnitRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E1470A22C077D400FB1D13 /* AudioUnitRecorder.m */; };
+		F4E1470F22C07A0A00FB1D13 /* AudioPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E1470E22C07A0A00FB1D13 /* AudioPlayerViewController.m */; };
+		F4E1471222C07A1C00FB1D13 /* VideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E1471122C07A1C00FB1D13 /* VideoPlayerViewController.m */; };
+		F4E1471522C07A3900FB1D13 /* AudioRecorderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E1471422C07A3900FB1D13 /* AudioRecorderViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F4358FD32290EBF100D63289 /* ADUnitTool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADUnitTool.h; sourceTree = "<group>"; };
-		F4358FD42290EBF100D63289 /* ADUnitTool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADUnitTool.m; sourceTree = "<group>"; };
-		F4358FD62290EEF400D63289 /* ADAudioSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAudioSession.h; sourceTree = "<group>"; };
-		F4358FD72290EEF400D63289 /* ADAudioSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADAudioSession.m; sourceTree = "<group>"; };
 		F4358FD92290F11600D63289 /* BaseUnitPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseUnitPlayer.h; sourceTree = "<group>"; };
 		F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BaseUnitPlayer.m; sourceTree = "<group>"; };
-		F4358FDC2290F50A00D63289 /* AVAudioSession+extion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AVAudioSession+extion.h"; sourceTree = "<group>"; };
-		F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "AVAudioSession+extion.m"; sourceTree = "<group>"; };
-		F4358FDF2290F54B00D63289 /* AudioCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioCommon.h; sourceTree = "<group>"; };
 		F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_f32le_2.pcm; sourceTree = "<group>"; };
 		F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_s16le_2.amr; sourceTree = "<group>"; };
+		F4472DE622C22F9B00C52CCC /* ADAudioSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADAudioSession.m; sourceTree = "<group>"; };
+		F4472DE722C22F9B00C52CCC /* ADAudioSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADAudioSession.h; sourceTree = "<group>"; };
+		F44F230122C32BD400A58FD0 /* AudioDataWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioDataWriter.h; sourceTree = "<group>"; };
+		F44F230222C32BD400A58FD0 /* AudioDataWriter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioDataWriter.m; sourceTree = "<group>"; };
 		F45E467E228A514E00C7DBF9 /* media.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = media.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F45E4681228A514E00C7DBF9 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F45E4682228A514E00C7DBF9 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -90,6 +92,20 @@
 		F4908D2D22ADEBD3002566FF /* VideoFileSource.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoFileSource.h; sourceTree = "<group>"; };
 		F4908D2E22ADEBD3002566FF /* VideoFileSource.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoFileSource.m; sourceTree = "<group>"; };
 		F4D0B1F122B0BD8500195205 /* test-420P-320x160.yuv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test-420P-320x160.yuv"; sourceTree = "<group>"; };
+		F4E146FD22C0593C00FB1D13 /* 采集音频.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "采集音频.md"; sourceTree = "<group>"; };
+		F4E1470222C0776500FB1D13 /* ADUnitTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADUnitTool.h; sourceTree = "<group>"; };
+		F4E1470322C0776500FB1D13 /* AVAudioSession+extion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AVAudioSession+extion.m"; sourceTree = "<group>"; };
+		F4E1470422C0776500FB1D13 /* AVAudioSession+extion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "AVAudioSession+extion.h"; sourceTree = "<group>"; };
+		F4E1470522C0776600FB1D13 /* ADUnitTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ADUnitTool.m; sourceTree = "<group>"; };
+		F4E1470622C0776600FB1D13 /* AudioCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioCommon.h; sourceTree = "<group>"; };
+		F4E1470922C077D400FB1D13 /* AudioUnitRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioUnitRecorder.h; sourceTree = "<group>"; };
+		F4E1470A22C077D400FB1D13 /* AudioUnitRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioUnitRecorder.m; sourceTree = "<group>"; };
+		F4E1470D22C07A0A00FB1D13 /* AudioPlayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioPlayerViewController.h; sourceTree = "<group>"; };
+		F4E1470E22C07A0A00FB1D13 /* AudioPlayerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioPlayerViewController.m; sourceTree = "<group>"; };
+		F4E1471022C07A1C00FB1D13 /* VideoPlayerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoPlayerViewController.h; sourceTree = "<group>"; };
+		F4E1471122C07A1C00FB1D13 /* VideoPlayerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoPlayerViewController.m; sourceTree = "<group>"; };
+		F4E1471322C07A3900FB1D13 /* AudioRecorderViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioRecorderViewController.h; sourceTree = "<group>"; };
+		F4E1471422C07A3900FB1D13 /* AudioRecorderViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioRecorderViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,15 +138,19 @@
 		F45E4680228A514E00C7DBF9 /* media */ = {
 			isa = PBXGroup;
 			children = (
-				F4908D0A22ABB3EF002566FF /* videoPlayer */,
-				F45E46DB228F87E600C7DBF9 /* fileResources */,
-				F45E46D4228F87CC00C7DBF9 /* AudioGroup */,
+				F4E1470C22C079DD00FB1D13 /* Activities */,
+				F4E146FB22C0587300FB1D13 /* AudioRecorder */,
+				F45E46D4228F87CC00C7DBF9 /* AudioPlayer */,
+				F4908D0A22ABB3EF002566FF /* VideoPlayer */,
+				F4E146FC22C0588D00FB1D13 /* VideoRecorder */,
+				F4E1470122C0767800FB1D13 /* AudioCommon */,
 				F45E4681228A514E00C7DBF9 /* AppDelegate.h */,
 				F45E4682228A514E00C7DBF9 /* AppDelegate.m */,
 				F45E4684228A514E00C7DBF9 /* ViewController.h */,
 				F45E4685228A514E00C7DBF9 /* ViewController.m */,
 				F45E4687228A514E00C7DBF9 /* Main.storyboard */,
 				F45E468A228A514F00C7DBF9 /* Assets.xcassets */,
+				F45E46DB228F87E600C7DBF9 /* fileResources */,
 				F45E468C228A514F00C7DBF9 /* LaunchScreen.storyboard */,
 				F45E468F228A514F00C7DBF9 /* Info.plist */,
 				F45E4690228A514F00C7DBF9 /* main.m */,
@@ -138,26 +158,19 @@
 			path = media;
 			sourceTree = "<group>";
 		};
-		F45E46D4228F87CC00C7DBF9 /* AudioGroup */ = {
+		F45E46D4228F87CC00C7DBF9 /* AudioPlayer */ = {
 			isa = PBXGroup;
 			children = (
-				F4358FD32290EBF100D63289 /* ADUnitTool.h */,
-				F4358FD42290EBF100D63289 /* ADUnitTool.m */,
 				F45E46D7228F87CC00C7DBF9 /* ADAudioUnitPlay.h */,
 				F45E46D5228F87CC00C7DBF9 /* ADAudioUnitPlay.m */,
 				F45E46E0228F884900C7DBF9 /* ADAVPlayer.h */,
 				F45E46E1228F884900C7DBF9 /* ADAVPlayer.m */,
 				F45E46E3228F888000C7DBF9 /* ADAVAudioPlayer.h */,
 				F45E46E4228F888000C7DBF9 /* ADAVAudioPlayer.m */,
-				F4358FD62290EEF400D63289 /* ADAudioSession.h */,
-				F4358FD72290EEF400D63289 /* ADAudioSession.m */,
 				F4358FD92290F11600D63289 /* BaseUnitPlayer.h */,
 				F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */,
-				F4358FDC2290F50A00D63289 /* AVAudioSession+extion.h */,
-				F4358FDD2290F50A00D63289 /* AVAudioSession+extion.m */,
-				F4358FDF2290F54B00D63289 /* AudioCommon.h */,
 			);
-			path = AudioGroup;
+			path = AudioPlayer;
 			sourceTree = "<group>";
 		};
 		F45E46DB228F87E600C7DBF9 /* fileResources */ = {
@@ -171,7 +184,7 @@
 			path = fileResources;
 			sourceTree = "<group>";
 		};
-		F4908D0A22ABB3EF002566FF /* videoPlayer */ = {
+		F4908D0A22ABB3EF002566FF /* VideoPlayer */ = {
 			isa = PBXGroup;
 			children = (
 				F4908D0C22ABB44A002566FF /* CGImageUtils.h */,
@@ -198,7 +211,53 @@
 				F4908D2D22ADEBD3002566FF /* VideoFileSource.h */,
 				F4908D2E22ADEBD3002566FF /* VideoFileSource.m */,
 			);
-			path = videoPlayer;
+			path = VideoPlayer;
+			sourceTree = "<group>";
+		};
+		F4E146FB22C0587300FB1D13 /* AudioRecorder */ = {
+			isa = PBXGroup;
+			children = (
+				F4E146FD22C0593C00FB1D13 /* 采集音频.md */,
+				F4E1470922C077D400FB1D13 /* AudioUnitRecorder.h */,
+				F4E1470A22C077D400FB1D13 /* AudioUnitRecorder.m */,
+			);
+			path = AudioRecorder;
+			sourceTree = "<group>";
+		};
+		F4E146FC22C0588D00FB1D13 /* VideoRecorder */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = VideoRecorder;
+			sourceTree = "<group>";
+		};
+		F4E1470122C0767800FB1D13 /* AudioCommon */ = {
+			isa = PBXGroup;
+			children = (
+				F4472DE722C22F9B00C52CCC /* ADAudioSession.h */,
+				F4472DE622C22F9B00C52CCC /* ADAudioSession.m */,
+				F4E1470222C0776500FB1D13 /* ADUnitTool.h */,
+				F4E1470522C0776600FB1D13 /* ADUnitTool.m */,
+				F4E1470622C0776600FB1D13 /* AudioCommon.h */,
+				F4E1470422C0776500FB1D13 /* AVAudioSession+extion.h */,
+				F4E1470322C0776500FB1D13 /* AVAudioSession+extion.m */,
+				F44F230122C32BD400A58FD0 /* AudioDataWriter.h */,
+				F44F230222C32BD400A58FD0 /* AudioDataWriter.m */,
+			);
+			path = AudioCommon;
+			sourceTree = "<group>";
+		};
+		F4E1470C22C079DD00FB1D13 /* Activities */ = {
+			isa = PBXGroup;
+			children = (
+				F4E1470D22C07A0A00FB1D13 /* AudioPlayerViewController.h */,
+				F4E1470E22C07A0A00FB1D13 /* AudioPlayerViewController.m */,
+				F4E1471022C07A1C00FB1D13 /* VideoPlayerViewController.h */,
+				F4E1471122C07A1C00FB1D13 /* VideoPlayerViewController.m */,
+				F4E1471322C07A3900FB1D13 /* AudioRecorderViewController.h */,
+				F4E1471422C07A3900FB1D13 /* AudioRecorderViewController.m */,
+			);
+			path = Activities;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -278,22 +337,27 @@
 				F45E46E2228F884900C7DBF9 /* ADAVPlayer.m in Sources */,
 				F45E46E5228F888000C7DBF9 /* ADAVAudioPlayer.m in Sources */,
 				F4908D2622ABB5C5002566FF /* GLVideoView.m in Sources */,
+				F44F230322C32BD400A58FD0 /* AudioDataWriter.m in Sources */,
 				F4908D2322ABB44B002566FF /* GLContext.m in Sources */,
 				F45E4686228A514E00C7DBF9 /* ViewController.m in Sources */,
 				F4908D1F22ABB44B002566FF /* CGImageUtils.m in Sources */,
-				F4358FD52290EBF100D63289 /* ADUnitTool.m in Sources */,
 				F4908D2222ABB44B002566FF /* GLProgram.m in Sources */,
+				F4E1471522C07A3900FB1D13 /* AudioRecorderViewController.m in Sources */,
 				F45E4691228A514F00C7DBF9 /* main.m in Sources */,
 				F4908D2F22ADEBD3002566FF /* VideoFileSource.m in Sources */,
+				F4E1470822C0776600FB1D13 /* ADUnitTool.m in Sources */,
+				F4E1470B22C077D400FB1D13 /* AudioUnitRecorder.m in Sources */,
+				F4472DE822C22F9B00C52CCC /* ADAudioSession.m in Sources */,
 				F4908D1C22ABB44B002566FF /* GLFrameBuffer.m in Sources */,
 				F45E46D9228F87CC00C7DBF9 /* ADAudioUnitPlay.m in Sources */,
-				F4358FD82290EEF400D63289 /* ADAudioSession.m in Sources */,
 				F4908D2022ABB44B002566FF /* GLUtils.m in Sources */,
 				F4908D2922ABB751002566FF /* YuvPlayer.m in Sources */,
+				F4E1470722C0776600FB1D13 /* AVAudioSession+extion.m in Sources */,
 				F45E4683228A514E00C7DBF9 /* AppDelegate.m in Sources */,
 				F4358FDB2290F11600D63289 /* BaseUnitPlayer.m in Sources */,
 				F4908D1D22ABB44B002566FF /* GLRenderYUVSource.m in Sources */,
-				F4358FDE2290F50A00D63289 /* AVAudioSession+extion.m in Sources */,
+				F4E1471222C07A1C00FB1D13 /* VideoPlayerViewController.m in Sources */,
+				F4E1470F22C07A0A00FB1D13 /* AudioPlayerViewController.m in Sources */,
 				F4908D1E22ABB44B002566FF /* GLRenderRGBSource.m in Sources */,
 				F4908D2122ABB44B002566FF /* GLRenderSource.m in Sources */,
 			);

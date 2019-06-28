@@ -17,16 +17,22 @@
  *  AUGraph;它是一个桥接器，用来获取AudioUnit;typedef struct OpaqueAUGraph *AUGraph;
  *  AUNode;对于AudioUnit的封装，结合AUGraph获取AudioUnit
  */
-
 -(id)initWithChannels:(NSInteger)chs sampleRate:(CGFloat)rate format:(AudioFormatFlags)iformat path:(NSString *)path
 {
     if (self = [super init]) {
+        // 1、配置音频会话 AVAudioSession，播放和录制音频都需要该会话
         self.aSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 formatFlags:iformat formatId:kAudioFormatLinearPCM];
-        
+        // 2、配置打断事件的通知监听，比如用户播放音频/录制音频时插上耳机，h手机连上了蓝牙，突然来电等等事件，对这些事件如何处理;一般
+        // 播放和录制音频都需要该处理该监听通知
         [self addObservers];
+        // 3、配置播放文件输入流
         [self initInputStream:path];
+        // 4、创建播放音频的描述组件，它描述了AudioUnit的类型和属性，每一种AudioUnit代表了一个功能，比如用于播放音频的
+        // kAudioUnitType_Output
         [self createAudioComponentDesctription];
+        // 5、实例化AudioUnit
         [self createAudioUnitByAugraph];
+        // 6、配置AudioUnit属性，同时构建Augraph工作流程图，将各个AudioUnit连接起来，构成一个完整的工作流。
         [self setAudioUnitProperties];
         
     }
@@ -70,7 +76,7 @@
 
 /** 创建 AudioUnit
  *  和通过AUGraph创建；
-*/
+ */
 - (void)createAudioUnitByAugraph
 {
     OSStatus status = noErr;
@@ -105,13 +111,25 @@
     if (status != noErr) {
         NSLog(@"AUGraphNodeInfo fail %d",status);
     }
-    
 }
 
 /** 设置AudioUnit属性
- *  1、通过AudioUnitSetProperty
- *  2、关于remoteIO的element，扬声器对应的AudioUnitElement值为0，app能控制的AudioUnitScope值为kAudioUnitScope_Input；麦克风对应的AudioUnitElement值为1
- *  app能控制的udioUnitScope值为kAudioUnitScope_Output
+ *  1、通过AudioUnitSetProperty(AudioUnit inUnit,
+ *              AudioUnitPropertyID      inID,
+ *              AudioUnitScope           inScope,
+ *              AudioUnitElement         inElement,
+ *          const void * __nullable      inData,
+ *             UInt32                    inDataSize
+ *              )
+ *  2、对于开启和关闭麦克风和扬声器的功能，inID取值为kAudioOutputUnitProperty_EnableIO
+ *  3、关于remoteIO的element，扬声器对应的AudioUnitElement值为0，麦克风对应的AudioUnitElement值为1
+ *  4、每一个AudioUnit可以有至少一个输入(kAudioUnitScope_Input)和输出(kAudioUnitScope_Output)，对于remoteIO的element,扬
+ *  声器对应的AudioUnitElement值为0，麦克风对应的AudioUnitElement值为1；对于AUConverter类型格式转换器，它的AudioUnitElement值
+ *  总为0；对于Mixer类型的混音器，它只能有一个输出
+ *  4、对于麦克风，它的kAudioUnitScope_Input连接的是系统音频采集硬件，用于采集声音；kAudioUnitScope_Output连接的则是应用端，用于将采集的
+ *  音频按照指定的格式输出给应用端；所以这下可以明白为什么开启麦克风硬件的inScope参数是kAudioUnitScope_Input了
+ *  5、对于扬声器，它的kAudioUnitScope_Input连接的是应用端，用于接收来自应用端的指定格式的音频数据；kAudioUnitScope_Output连接的则是系统
+ *  音频播放硬件，用于播放声音；所以这下可以明白为什么开启扬声器硬件的inScope参数是kAudioUnitScope_Output了
  */
 - (void)setAudioUnitProperties
 {
@@ -157,7 +175,9 @@
     AURenderCallbackStruct callback;
     callback.inputProc = InputRenderCallback;
     callback.inputProcRefCon = (__bridge void*)self;
-    status = AudioUnitSetProperty(_cvtUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, sizeof(callback));
+//    status = AudioUnitSetProperty(_cvtUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, sizeof(callback));
+    // 换成下面的函数与上面效果一样
+    status = AUGraphSetNodeInputCallback(_aGraph, _cvtNode, 0, &callback);
     if (status != noErr) {
         NSLog(@"AudioUnitSetProperty fail %d",status);
     }

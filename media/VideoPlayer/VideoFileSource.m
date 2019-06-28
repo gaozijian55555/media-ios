@@ -65,10 +65,13 @@
         frame->width = self.width;
         frame->height = self.height;
         frame->cv_pixelbuffer = NULL;
+        frame->full_range = 0;
         
         size_t size = fread(frame->luma, 1, self.width * self.height, yuvFile);
         size = fread(frame->chromaB, 1, self.width * self.height/4, yuvFile);
         size = fread(frame->chromaR, 1, self.width * self.height/4, yuvFile);
+        
+        
         if (size == 0) {
             NSLog(@"读取的数据字节为0");
             if ([self.delegate respondsToSelector:@selector(didFinishVideoData)]) {

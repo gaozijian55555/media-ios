@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "GLDefine.h"
+#import <CoreMedia/CoreMedia.h>
 
 @protocol VideoFileSourceProtocol <NSObject>
 
