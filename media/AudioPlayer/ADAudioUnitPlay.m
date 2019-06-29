@@ -22,13 +22,13 @@
     if (self = [super init]) {
         // 1、配置音频会话 AVAudioSession，播放和录制音频都需要该会话
         self.aSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 formatFlags:iformat formatId:kAudioFormatLinearPCM];
-        // 2、配置打断事件的通知监听，比如用户播放音频/录制音频时插上耳机，h手机连上了蓝牙，突然来电等等事件，对这些事件如何处理;一般
-        // 播放和录制音频都需要该处理该监听通知
+        // 2、配置打断事件的通知监听，比如用户播放音频/录制音频时插上耳机，h手机连上了蓝牙，突然来电
+        // 等等事件，对这些事件如何处理;一般播放和录制音频都需要该处理该监听通知
         [self addObservers];
         // 3、配置播放文件输入流
         [self initInputStream:path];
-        // 4、创建播放音频的描述组件，它描述了AudioUnit的类型和属性，每一种AudioUnit代表了一个功能，比如用于播放音频的
-        // kAudioUnitType_Output
+        // 4、创建播放音频的描述组件，它描述了AudioUnit的类型和属性，每一种AudioUnit代表了一个功能，
+        // 比如用于播放音频的kAudioUnitType_Output
         [self createAudioComponentDesctription];
         // 5、实例化AudioUnit
         [self createAudioUnitByAugraph];
@@ -166,7 +166,8 @@
     
     /** 构建连接
      *  只有构建连接之后才有一个完整的数据驱动链。如下将构成链条如下：
-     *  _cvtUnit通过回调向文件要数据，得到数据后进行格式转换，将输出作为输入数据输送给_ioUnit，然后_ioUnit播放数据
+     *  _cvtUnit通过回调向文件要数据，得到数据后进行格式转换，将输出作为输入数据输送给_ioUnit，然后
+     *  _ioUnit播放数据
      */
     status = AUGraphConnectNodeInput(_aGraph, _cvtNode, 0, _ioNode, 0);
     if (status != noErr) {
@@ -283,7 +284,7 @@ static OSStatus InputRenderCallback(void *inRefCon,
     for (int iBuffer=0; iBuffer < ioData->mNumberBuffers; ++iBuffer) {
         ioData->mBuffers[iBuffer].mDataByteSize = (UInt32)[player->inputSteam read:ioData->mBuffers[iBuffer].mData maxLength:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize];
         NSLog(@"buffer %d out size: %d",iBuffer, ioData->mBuffers[iBuffer].mDataByteSize);
-        NSLog(@"数据 %@",[NSData dataWithBytes:ioData->mBuffers[0].mData length:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize]);
+//        NSLog(@"数据 %@",[NSData dataWithBytes:ioData->mBuffers[0].mData length:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize]);
     }
     
     return noErr;

@@ -10,6 +10,8 @@
 
 @interface AudioDataWriter : NSObject
 
+- (void)deletePath:(NSString*)path;
+
 - (void)writeDataBytes:(Byte*)dBytes len:(NSInteger)len toPath:(NSString *)savePath;
 - (void)writeData:(NSData*)data toPath:(NSString *)savePath;
 @end

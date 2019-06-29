@@ -7,19 +7,21 @@
 //
 
 #import "AudioUnitRecorder.h"
+#define BufferList_cache_size (1024*10*5)
 
 @implementation AudioUnitRecorder
 
-- (id)initWithPath:(NSString *)savePath
+- (id)initWithFormatFlags:(AudioFormatFlags)flags
+                 channels:(NSInteger)chs
+                   format:(AudioFormatID)format
+               samplerate:(CGFloat)sampleRate
+                     Path:(NSString*)savePath
 {
     if (self = [super init]) {
         self.savePath = savePath;
         self.dataWriter = [[AudioDataWriter alloc] init];
         
-        // planner 格式和 32位浮点数，PCM格式数据
-        AudioFormatFlags formatFlag = kAudioFormatFlagIsSignedInteger|kAudioFormatFlagIsPacked;
-        AudioFormatID    formatId = kAudioFormatLinearPCM;
-        self.audioSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayAndRecord channels:2 sampleRate:44100 bufferDuration:0.02 formatFlags:formatFlag formatId:formatId];
+        self.audioSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryRecord channels:chs sampleRate:sampleRate bufferDuration:0.02 formatFlags:flags formatId:format];
         
         // 来电，连上蓝牙，音箱等打断监听
         [self addInterruptListioner];
@@ -35,12 +37,37 @@
         
         // 将各个AudioUnit单元连接起来
         [self makeAudioUnitsConnectionShipness];
+        
+        // 初始化缓冲器
+        /** 遇到问题：采用传统的方式定义变量:AudioBufferList bufferList;然后尝试对bufferList.mBuffers[1]=NULL，会
+         *  奔溃
+         *  分析原因：因为AudioBufferList默认是只有1个buffer，mBuffers[1]的属性是未初始化的，相当于是NULL，所以这样直接
+         *  访问肯定会奔溃
+         *  解决方案：采用如下特殊的C语言方式来为AudioBufferList分配内存，这样mBuffers[1]就不会为NULL了
+         */
+        BOOL isPlanner = [self.audioSession isPlanner];
+        _bufferList = (AudioBufferList *)malloc(sizeof(AudioBufferList) + (chs - 1) * sizeof(AudioBuffer));
+        
+        if (isPlanner) {
+            _bufferList->mNumberBuffers = (UInt32)chs;
+            for (NSInteger i=0; i<chs; i++) {
+                _bufferList->mBuffers[i].mData = malloc(BufferList_cache_size);
+                _bufferList->mBuffers[i].mDataByteSize = BufferList_cache_size;
+            }
+        } else {
+            _bufferList->mNumberBuffers = 1;
+            _bufferList->mBuffers[0].mData = malloc(BufferList_cache_size);
+            _bufferList->mBuffers[0].mDataByteSize = BufferList_cache_size;
+        }
     }
     return self;
 }
 
 - (void)startRecord
 {
+    // 删除之前文件
+    [self.dataWriter deletePath:_savePath];
+    
     OSStatus status = noErr;
     CAShow(_augraph);
     
@@ -61,6 +88,20 @@
     status = AUGraphStop(_augraph);
     if (status != noErr) {
         NSLog(@"AUGraphStop fail %d",status);
+    }
+}
+
+- (void)dealloc
+{
+    if (_bufferList != NULL) {
+        for (int i=0; i<_bufferList->mNumberBuffers; i++) {
+            if (_bufferList->mBuffers[i].mData != NULL) {
+                free(_bufferList->mBuffers[i].mData);
+                _bufferList->mBuffers[i].mData = NULL;
+            }
+        }
+        free(_bufferList);
+        _bufferList = NULL;
     }
 }
 
@@ -189,27 +230,8 @@ static OSStatus InputRenderCallback(void *inRefCon,
     
     // 如果作为音频录制的回调，ioData为NULL
 //    NSLog(@"d1 %p d2 %p",ioData->mBuffers[0].mData,ioData->mBuffers[1].mData);
-    
-    /** 遇到问题：采用传统的方式定义变量:AudioBufferList bufferList;然后尝试对bufferList.mBuffers[1]=NULL，会
-     *  奔溃
-     *  分析原因：因为AudioBufferList默认是只有1个buffer，mBuffers[1]的属性是未初始化的，相当于是NULL，所以这样直接
-     *  访问肯定会奔溃
-     *  解决方案：采用如下特殊的C语言方式来为AudioBufferList分配内存，这样mBuffers[1]就不会为NULL了
-     */
-    
-    AudioBufferList *bufferList = (AudioBufferList *)malloc(sizeof(AudioBufferList) + (chs - 1) * sizeof(AudioBuffer));
-    
-    if (isPlanner) {
-        bufferList->mNumberBuffers = chs;
-        for (NSInteger i=0; i<chs; i++) {
-            bufferList->mBuffers[i].mData = NULL;
-            bufferList->mBuffers[i].mDataByteSize = 0;
-        }
-    } else {
-        bufferList->mNumberBuffers = 1;
-        bufferList->mBuffers[0].mData = NULL;
-        bufferList->mBuffers[0].mDataByteSize = 0;
-    }
+    AudioBufferList *bufferList = player->_bufferList;
+
 
     OSStatus status = noErr;
     // 该函数的作用就是将麦克风采集的音频数据根据前面配置的RemoteIO输出数据格式渲染出来，然后放到
@@ -248,16 +270,6 @@ static OSStatus InputRenderCallback(void *inRefCon,
         UInt32 bufferLenght = bufferList->mBuffers[0].mDataByteSize;
         [player.dataWriter writeDataBytes:buffer.mData len:bufferLenght toPath:player.savePath];
     }
-    
-    // 释放资源
-    for (int i=0; i<chs; i++) {
-        if (bufferList->mBuffers[i].mData != NULL) {
-            free(bufferList->mBuffers[i].mData);
-            bufferList->mBuffers[i].mData = NULL;
-        }
-    }
-    free(bufferList);
-    bufferList = NULL;
     
     return status;
 }

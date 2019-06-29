@@ -10,6 +10,17 @@
 
 @implementation AudioDataWriter
 
+- (void)deletePath:(NSString*)path
+{
+    if (path.length == 0) {
+        return;
+    }
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]){
+        [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+    }
+}
+
 - (void)writeDataBytes:(Byte*)dBytes len:(NSInteger)len toPath:(NSString *)savePath
 {
     NSData *data = [NSData dataWithBytes:dBytes length:len];

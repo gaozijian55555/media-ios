@@ -8,14 +8,22 @@
 
 #import "AudioRecorderViewController.h"
 #import "AudioUnitRecorder.h"
+#import "ADAudioUnitPlay.h"
 
 @interface AudioRecorderViewController ()
 {
     BOOL isRecording;
     BOOL isPlaying;
     NSString *_audioPath;
+    
+    AudioFormatFlags _flags;
+    AudioFormatID    _formatId;
+    CGFloat          _sampleRate;
+    NSInteger        _channels;
+    
 }
 @property (strong, nonatomic) AudioUnitRecorder *audioUnitRecorder;
+@property (strong, nonatomic) ADAudioUnitPlay *audioUnitPlay;
 @property (strong, nonatomic) UIButton *recordBtn;
 @property (strong, nonatomic) UIButton *playBtn;
 @end
@@ -29,6 +37,11 @@
     NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
     _audioPath = [path stringByAppendingPathComponent:@"test.PCM"];
     NSLog(@"文件目录 ==>%@",_audioPath);
+    // planner 格式和 32位浮点数，PCM格式数据
+    _flags = kAudioFormatFlagIsSignedInteger|kAudioFormatFlagIsPacked;
+    _formatId = kAudioFormatLinearPCM;
+    _sampleRate = 44100;
+    _channels = 2;
     
     self.recordBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     self.recordBtn.frame = CGRectMake(150, 200, 100, 50);
@@ -62,20 +75,39 @@
 - (void)onTapRecordBtn:(UIButton*)btn
 {
     if (isRecording) {  // 正在录音
+        isRecording = NO;
+        [self.audioUnitRecorder stopRecord];
+        [self.recordBtn setTitle:@"开始录音" forState:UIControlStateNormal];
         
     } else {
         isRecording = YES;
         if (self.audioUnitRecorder == nil) {
-            self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithPath:_audioPath];
+            self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatFlags:_flags channels:_channels format:_formatId samplerate:_sampleRate Path:_audioPath];
         }
         
         [self.audioUnitRecorder startRecord];
+        
+        [self.recordBtn setTitle:@"停止录音" forState:UIControlStateNormal];
     }
 }
 
 - (void)onTapPlayBtn:(UIButton*)btn
 {
-    
+    /** 遇到问题：录制的kAudioFormatFlagIsSignedInteger的音频接着在播放，无法正常播放
+     *  解决方案：ios只支持16位整形和32位浮点型的播放，所以所以播放格式设置正确即可
+     */
+    if (!isPlaying) {
+        isPlaying = YES;
+        if (self.audioUnitPlay == nil) {
+            self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithChannels:_channels sampleRate:_sampleRate format:_flags path:_audioPath];
+        }
+        [self.audioUnitPlay play];
+        [self.playBtn setTitle:@"停止播放" forState:UIControlStateNormal];
+    } else {    // 正在播放
+        isPlaying = NO;
+        [self.audioUnitPlay stop];
+        [self.playBtn setTitle:@"开始播放" forState:UIControlStateNormal];
+    }
 }
 
 /*

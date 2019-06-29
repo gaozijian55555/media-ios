@@ -58,7 +58,7 @@
 /** AudioStreamBasicDescription详解，它用来描述对应的AudioUnit在处理数据时所需要的数据格式
  *  mSampleRate:音频的采样率，一般有44.1khz，48khz等
  *  mFormatID:编码类型，比如一般采集的原始音频编码就为kAudioFormatLinearPCM
- *  mFormatFlags:采样格式及存储方式，ios支持两种采样格式(Float，32位，Signed Integer 32)；存储方式就是(Interleaved)Packet和(NonInterleaved)Planner，前者表示每个声道
+ *  mFormatFlags:采样格式及存储方式，ios支持两种采样格式(Float，32位，Signed Integer 16)；存储方式就是(Interleaved)Packet和(NonInterleaved)Planner，前者表示每个声道
     数据交叉存储在AudioBufferList的mBuffers[0]中，后者表示每个声道数据分开存储在mBuffers[i]中
  *  mBitsPerChannel:每个声道所占位数，32(因为ios只有32位的采样格式);一个声道就是一个采样
  *  mChannelsPerFrame:每个Frame的声道数；Packet格式，一个Frame包含多个声道，Planner格式，一个Frame包含一个声道
@@ -75,8 +75,12 @@
 + (AudioStreamBasicDescription)streamDesWithLinearPCMformat:(AudioFormatFlags)flags sampleRate:(CGFloat)rate channels:(NSInteger)chs
 {
     
-    // 设置数据格式 ios只支持16位整形和32位浮点型
+    // 重要：设置数据格式 ios只支持16位整形和32位浮点型的播放;支持16位，32位整形录制和32位浮点型录制
     UInt32 bytesPerChannel = 4;
+    if (flags & kAudioFormatFlagIsSignedInteger) {
+        bytesPerChannel = 2;
+    }
+
     BOOL isPlanner = flags & kAudioFormatFlagIsNonInterleaved;
     
     AudioStreamBasicDescription asbd;

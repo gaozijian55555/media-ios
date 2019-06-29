@@ -27,12 +27,18 @@
     AudioComponentDescription   _convertdes;
     AUNode                      _convertNode;
     AudioUnit                   _convertUnit;
+    
+    AudioBufferList *           _bufferList;
 }
 @property (strong, nonatomic)ADAudioSession  *audioSession;
 @property (strong, nonatomic)AudioDataWriter *dataWriter;
 @property (strong, nonatomic)NSString *savePath;
 
-- (id)initWithPath:(NSString*)savePath;
+- (id)initWithFormatFlags:(AudioFormatFlags)flags
+                 channels:(NSInteger)chs
+                   format:(AudioFormatID)format
+               samplerate:(CGFloat)sampleRate
+                     Path:(NSString*)savePath;
 
 - (void)startRecord;
 - (void)stopRecord;
