@@ -34,11 +34,11 @@
 @property (strong, nonatomic)AudioDataWriter *dataWriter;
 @property (strong, nonatomic)NSString *savePath;
 
-- (id)initWithFormatFlags:(AudioFormatFlags)flags
-                 channels:(NSInteger)chs
-                   format:(AudioFormatID)format
-               samplerate:(CGFloat)sampleRate
-                     Path:(NSString*)savePath;
+- (id)initWithFormatType:(ADAudioFormatType)formatType
+                 planner:(BOOL)planner
+                channels:(NSInteger)chs
+              samplerate:(CGFloat)sampleRate
+                    Path:(NSString*)savePath;
 
 - (void)startRecord;
 - (void)stopRecord;

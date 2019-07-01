@@ -22,7 +22,11 @@
 }
 @property (strong, nonatomic)ADAudioSession *dSession;
 
--(id)initWithChannels:(NSInteger)chs sampleRate:(CGFloat)rate format:(AudioFormatFlags)iformat path:(NSString*)path;
+-(id)initWithChannels:(NSInteger)chs
+           sampleRate:(CGFloat)rate
+               format:(ADAudioFormatType)format
+                 path:(NSString*)path;
+
 -(void)play;
 -(void)stop;
 @end

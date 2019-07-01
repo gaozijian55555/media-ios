@@ -15,10 +15,14 @@ const NSTimeInterval AUSAudioSessionDelay_Low = 0.0058;
 @implementation ADAudioSession
 - (instancetype)init
 {
-    return [self initWithCategary:AVAudioSessionCategoryPlayback channels:2 sampleRate:44100 bufferDuration:AUSAudioSessionDelay_Low*4 formatFlags:kAudioFormatFlagIsPacked formatId:kAudioFormatLinearPCM];
+    return [self initWithCategary:AVAudioSessionCategoryPlayback channels:2 sampleRate:44100 bufferDuration:AUSAudioSessionDelay_Low*4 fortmatType:ADAudioFormatType16Int saveType:ADAudioSaveTypePacket];
 }
-
--(instancetype)initWithCategary:(AVAudioSessionCategory)category channels:(NSInteger)chs sampleRate:(double)rate bufferDuration:(NSTimeInterval)duration formatFlags:(AudioFormatFlags)flags formatId:(AudioFormatID)formatId
+-(instancetype)initWithCategary:(AVAudioSessionCategory)category
+                       channels:(NSInteger)chs
+                     sampleRate:(double)rate
+                 bufferDuration:(NSTimeInterval)duration
+                    fortmatType:(ADAudioFormatType)formatType
+                       saveType:(ADAudioSaveType)saveType
 {
     if (self = [super init]) {
         /** AVAudioSession 是一个单例，表示一个音频会话，不管录制音频还是播放音频都需要这样一个音频会话，它表示要播放和要录制音频的属性，比如：
@@ -27,17 +31,11 @@ const NSTimeInterval AUSAudioSessionDelay_Low = 0.0058;
         self.currentSampleRate = rate;
         // 要采集或者播放音频的声道数
         self.currentChannels = chs;
-        /** 音频采样数据的存储格式，比如
-         *  kAudioFormatFlagIsSignedInteger：表示每一个采样数据是由32位整数来表示
-         *  kAudioFormatFlagIsFloat：表示每一个采样数据由32位浮点数来表示
-         *  kAudioFormatFlagIsPacked：每个声道数据交叉存储在AudioBufferList的mBuffers[0]中,如：左声道右声道左声道右声道....
-         *  kAudioFormatFlagIsNonInterleaved：表示每个声道数据分开存储在mBuffers[i]中如：
-         *  mBuffers[0],左声道左声道左声道左声道
-         *  mBuffers[1],右声道右声道右声道右声道
-         */
-        self.formatFlags = flags;
-        // 表示音频的编码格式 如kAudioFormatLinearPCM 表示音频为linearPCM编码
-        self.formatId = formatId;
+        
+        // 采样格式
+        self.formatType = formatType;
+        // 存储格式
+        self.saveType = saveType;
         
         // 1、创建一个音频会话 它是单例；AVAudioSession 在AVFoundation/AVFAudio/AVAudioSession.h中定义
         _aSession = [AVAudioSession sharedInstance];
@@ -53,8 +51,8 @@ const NSTimeInterval AUSAudioSessionDelay_Low = 0.0058;
         // 设置采样率，不管是播放还是录制声音 都需要设置采样率
         [_aSession setPreferredSampleRate:rate error:nil];
         
-        // 设置I/O的Buffer，数值越小说明缓存的数据越小，延迟也就越低；这里意思就是麦克风采集声音时只缓存20ms的数据
-//        [_aSession setPreferredIOBufferDuration:duration error:nil];
+        // 设置I/O的Buffer，数值越小说明缓存的数据越小，延迟也就越低；
+        [_aSession setPreferredIOBufferDuration:duration error:nil];
         
         // 激活会话
         [_aSession setActive:YES error:nil];
@@ -65,11 +63,31 @@ const NSTimeInterval AUSAudioSessionDelay_Low = 0.0058;
 
 - (BOOL)isPlanner
 {
-    return self.formatFlags & kAudioFormatFlagIsNonInterleaved;
+    return self.saveType == ADAudioSaveTypePlanner;
 }
 
--(int)bytesPerChannel
+- (AudioFormatFlags)formatFlags
 {
+    AudioFormatFlags flags = kAudioFormatFlagIsSignedInteger;
+    if (self.formatType == ADAudioFormatType32Float) {
+        flags = kAudioFormatFlagIsFloat;
+    }
+    
+    if (self.isPlanner) {
+        flags |= kAudioFormatFlagIsNonInterleaved;
+    } else {
+        flags |= kAudioFormatFlagIsPacked;
+    }
+    
+    return flags;
+}
+
+- (NSInteger)bytesPerChannel
+{
+    if (self.formatType == ADAudioFormatType16Int) {
+        return 2;
+    }
     return 4;
 }
+
 @end

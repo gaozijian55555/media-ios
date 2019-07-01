@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#import "ADAudioDefine.h"
 
 /** 该类是对AVAudioSession的封装
  *
@@ -18,13 +19,18 @@
 @property (assign, nonatomic) CGFloat   currentSampleRate;
 @property (assign, nonatomic) NSInteger currentChannels;
 
-@property (assign, nonatomic) AudioFormatFlags formatFlags;
-@property (assign, nonatomic) AudioFormatID    formatId;
+@property (assign, nonatomic) ADAudioFormatType formatType;
+@property (assign, nonatomic) ADAudioSaveType   saveType;
 
--(instancetype)initWithCategary:(AVAudioSessionCategory)category channels:(NSInteger)chs sampleRate:(double)rate bufferDuration:(NSTimeInterval)duration formatFlags:(AudioFormatFlags)flags formatId:(AudioFormatID)formatId;
+-(instancetype)initWithCategary:(AVAudioSessionCategory)category
+                       channels:(NSInteger)chs
+                     sampleRate:(double)rate
+                 bufferDuration:(NSTimeInterval)duration
+                    fortmatType:(ADAudioFormatType)formatType
+                       saveType:(ADAudioSaveType)saveType;
 
 // 是否planner 存储方式
 - (BOOL)isPlanner;
-// 每个声道占用的字节数，对于IOS来说，只有32位的采样格式，所以这里返回4
-- (int)bytesPerChannel;
+- (AudioFormatFlags)formatFlags;
+- (NSInteger)bytesPerChannel;
 @end

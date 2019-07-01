@@ -43,6 +43,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F411F11422C99B6B00C60488 /* ADAudioDefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAudioDefine.h; sourceTree = "<group>"; };
 		F4358FD92290F11600D63289 /* BaseUnitPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseUnitPlayer.h; sourceTree = "<group>"; };
 		F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BaseUnitPlayer.m; sourceTree = "<group>"; };
 		F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_f32le_2.pcm; sourceTree = "<group>"; };
@@ -238,6 +239,7 @@
 				F4472DE622C22F9B00C52CCC /* ADAudioSession.m */,
 				F4E1470222C0776500FB1D13 /* ADUnitTool.h */,
 				F4E1470522C0776600FB1D13 /* ADUnitTool.m */,
+				F411F11422C99B6B00C60488 /* ADAudioDefine.h */,
 				F4E1470622C0776600FB1D13 /* AudioCommon.h */,
 				F4E1470422C0776500FB1D13 /* AVAudioSession+extion.h */,
 				F4E1470322C0776500FB1D13 /* AVAudioSession+extion.m */,

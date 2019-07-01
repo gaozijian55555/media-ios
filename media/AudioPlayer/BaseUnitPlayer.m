@@ -9,10 +9,10 @@
 #import "BaseUnitPlayer.h"
 
 @implementation BaseUnitPlayer
--(id)initWithChannels:(NSInteger)chs sampleRate:(CGFloat)rate format:(AudioFormatFlags)iformat path:(NSString *)path
+- (id)initWithChannels:(NSInteger)chs sampleRate:(CGFloat)rate format:(ADAudioFormatType)format path:(NSString *)path
 {
     if (self = [super init]) {
-        self.dSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 formatFlags:iformat formatId:kAudioFormatLinearPCM];
+        self.dSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 fortmatType:format saveType:ADAudioSaveTypePacket];
         
         [self addObservers];
         [self initInputStream:path];
@@ -23,6 +23,7 @@
     }
     return self;
 }
+
 - (void)addObservers
 {
     // 添加路由改变时的通知;比如用户插上了耳机，则remoteIO的element0对应的输出硬件由扬声器变为了耳机;策略就是 如果用户连上了蓝牙，则屏蔽手机内置的扬声器
@@ -67,7 +68,7 @@
 - (void)createAudioComponentDesctription
 {
     // 播放音频描述组件
-    _ioDes = [ADUnitTool descriptionWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
+    _ioDes = [ADUnitTool comDesWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
 }
 
 - (void)setAudioUnitProperties
@@ -79,16 +80,19 @@
         NSLog(@"AudioUnitSetProperty fail %d",status);
     }
     
+    // 设置扬声器的输入音频数据流格式
     AudioFormatFlags flags = self.dSession.formatFlags;
     CGFloat rate = self.dSession.currentSampleRate;
     NSInteger chs = self.dSession.currentChannels;
-    AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs];
+    NSInteger bytesPerchannel = self.dSession.bytesPerChannel;
+    
+    AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs bytesPerChannel:bytesPerchannel];
     status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &odes, sizeof(odes));
     if (status != noErr) {
         NSLog(@"AudioUnitSetProperty io fail %d",status);
     }
     
-    // 设置回调函数
+    // 设置扬声器的输入接口的回调函数，那么扬声器将通过该回调来拿音频数据
     AURenderCallbackStruct callback;
     callback.inputProc = InputRenderCallback;
     callback.inputProcRefCon = (__bridge void*)self;
@@ -111,7 +115,11 @@
 
 - (void)stop
 {
-    AudioOutputUnitStart(_ioUnit);
+    AudioOutputUnitStop(_ioUnit);
+    if (inputSteam) {
+        [inputSteam close];
+        inputSteam = nil;   
+    }
 }
 
 #pragma mark 播放声音过程中收到了路由改变通知处理
@@ -171,7 +179,12 @@ static OSStatus InputRenderCallback(void *inRefCon,
     BaseUnitPlayer *player = (__bridge id)inRefCon;
     NSLog(@"d1 %p d2 %p",ioData->mBuffers[0].mData,ioData->mBuffers[1].mData);
     for (int iBuffer=0; iBuffer < ioData->mNumberBuffers; ++iBuffer) {
-        ioData->mBuffers[iBuffer].mDataByteSize = (UInt32)[player->inputSteam read:ioData->mBuffers[iBuffer].mData maxLength:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize];
+        NSInteger result=(UInt32)[player->inputSteam read:ioData->mBuffers[iBuffer].mData maxLength:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize];
+        if (result <=0) {
+            [player stop];
+            break;
+        }
+        ioData->mBuffers[iBuffer].mDataByteSize =result;
         NSLog(@"buffer %d out size: %d",iBuffer, ioData->mBuffers[iBuffer].mDataByteSize);
     }
     

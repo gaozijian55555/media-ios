@@ -9,6 +9,9 @@
 #import "ADAudioUnitPlay.h"
 
 @implementation ADAudioUnitPlay
+{
+    NSString *_audioPath;
+}
 /** 有关结构体
  *  OSStatus;typedef SInt32 OSStatus;noErr;定义在/usr/include/MacTypes.h中
  *  以下结构体都在AudioToolbox下：
@@ -17,11 +20,17 @@
  *  AUGraph;它是一个桥接器，用来获取AudioUnit;typedef struct OpaqueAUGraph *AUGraph;
  *  AUNode;对于AudioUnit的封装，结合AUGraph获取AudioUnit
  */
--(id)initWithChannels:(NSInteger)chs sampleRate:(CGFloat)rate format:(AudioFormatFlags)iformat path:(NSString *)path
+-(id)initWithChannels:(NSInteger)chs
+           sampleRate:(CGFloat)rate
+           formatType:(ADAudioFormatType)formatType
+              planner:(BOOL)planner
+                 path:(NSString*)path
 {
     if (self = [super init]) {
+        _audioPath = path;
+        
         // 1、配置音频会话 AVAudioSession，播放和录制音频都需要该会话
-        self.aSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 formatFlags:iformat formatId:kAudioFormatLinearPCM];
+        self.aSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 fortmatType:formatType saveType:ADAudioSaveTypePacket];
         // 2、配置打断事件的通知监听，比如用户播放音频/录制音频时插上耳机，h手机连上了蓝牙，突然来电
         // 等等事件，对这些事件如何处理;一般播放和录制音频都需要该处理该监听通知
         [self addObservers];
@@ -56,9 +65,9 @@
 - (void)createAudioComponentDesctription
 {
     // 播放音频描述组件
-    _ioDes = [ADUnitTool descriptionWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
+    _ioDes = [ADUnitTool comDesWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
     // 格式转换器组件
-    _cvtDes = [ADUnitTool descriptionWithType:kAudioUnitType_FormatConverter subType:kAudioUnitSubType_AUConverter fucture:kAudioUnitManufacturer_Apple];
+    _cvtDes = [ADUnitTool comDesWithType:kAudioUnitType_FormatConverter subType:kAudioUnitSubType_AUConverter fucture:kAudioUnitManufacturer_Apple];
 }
 
 - (void)initInputStream:(NSString*)path
@@ -140,13 +149,18 @@
         NSLog(@"AudioUnitSetProperty fail %d",status);
     }
     
-    AudioFormatFlags flags = self.aSession.formatFlags;
     CGFloat rate = self.aSession.currentSampleRate;
     NSInteger chs = self.aSession.currentChannels;
     //输入给扬声器的音频数据格式
-    AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved sampleRate:rate channels:chs];
+    /** 遇到问题：AUGraphInitialize fail
+     *  解决方案：创建AudioStreamBasicDescription对象时，mFormatFlags对应的数据格式一定要与mBitsPerChannel一致
+     */
+    AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved sampleRate:rate channels:chs bytesPerChannel:4];
+    
     // PCM文件的音频的数据格式
-    AudioStreamBasicDescription cvtInDes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs];
+    AudioFormatFlags flags = self.aSession.formatFlags;
+    NSInteger _bytesPerChannel = self.aSession.bytesPerChannel;
+    AudioStreamBasicDescription cvtInDes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs bytesPerChannel:_bytesPerChannel];
     
     // 设置扬声器的输入音频数据格式
     status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &odes, sizeof(odes));
@@ -198,6 +212,10 @@
     if (stauts != noErr) {
         NSLog(@"AUGraphStart fail %d",stauts);
     }
+    
+    if (inputSteam == nil) {
+        [self initInputStream:_audioPath];
+    }
 }
 
 - (void)stop
@@ -206,6 +224,11 @@
     status = AUGraphStop(_aGraph);
     if (status != noErr) {
         NSLog(@"AUGraphStop fail %d",status);
+    }
+    
+    if (inputSteam) {
+        [inputSteam close];
+        inputSteam = nil;
     }
 }
 
@@ -280,12 +303,14 @@ static OSStatus InputRenderCallback(void *inRefCon,
                                     AudioBufferList *ioData)
 {
     ADAudioUnitPlay *player = (__bridge id)inRefCon;
-    NSLog(@"d1 %p d2 %p",ioData->mBuffers[0].mData,ioData->mBuffers[1].mData);
-    for (int iBuffer=0; iBuffer < ioData->mNumberBuffers; ++iBuffer) {
-        ioData->mBuffers[iBuffer].mDataByteSize = (UInt32)[player->inputSteam read:ioData->mBuffers[iBuffer].mData maxLength:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize];
-        NSLog(@"buffer %d out size: %d",iBuffer, ioData->mBuffers[iBuffer].mDataByteSize);
-//        NSLog(@"数据 %@",[NSData dataWithBytes:ioData->mBuffers[0].mData length:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize]);
+    NSInteger result= (UInt32)[player->inputSteam read:ioData->mBuffers[0].mData maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
+    NSLog(@"d1 %p size %ld",ioData->mBuffers[0].mData,result);
+    if (result <=0) {
+        [player stop];
+        return kCGErrorNoneAvailable;
     }
+    ioData->mBuffers[0].mDataByteSize = (UInt32)result;
+    //        NSLog(@"数据 %@",[NSData dataWithBytes:ioData->mBuffers[0].mData length:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize]);
     
     return noErr;
 }

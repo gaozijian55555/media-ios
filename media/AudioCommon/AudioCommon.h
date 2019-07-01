@@ -12,6 +12,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioToolbox.h>
 
+#import "ADAudioDefine.h"
 #import "ADUnitTool.h"
 #import "ADAudioSession.h"
 #import "AVAudioSession+extion.h"

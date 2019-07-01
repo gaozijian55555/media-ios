@@ -32,7 +32,11 @@
 }
 @property (strong, nonatomic) ADAudioSession *aSession;
 
--(id)initWithChannels:(NSInteger)chs sampleRate:(CGFloat)rate format:(AudioFormatFlags)iformat path:(NSString*)path;
+-(id)initWithChannels:(NSInteger)chs
+           sampleRate:(CGFloat)rate
+           formatType:(ADAudioFormatType)formatType
+              planner:(BOOL)planner
+                 path:(NSString*)path;
 
 // 可以以planner格式播放音频。
 - (void)play;

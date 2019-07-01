@@ -10,18 +10,23 @@
 #define BufferList_cache_size (1024*10*5)
 
 @implementation AudioUnitRecorder
+{
+    BOOL _isPlanner;
+}
+- (id)initWithFormatType:(ADAudioFormatType)formatType
+                 planner:(BOOL)planner
+                channels:(NSInteger)chs
+              samplerate:(CGFloat)sampleRate
+                    Path:(NSString*)savePath
 
-- (id)initWithFormatFlags:(AudioFormatFlags)flags
-                 channels:(NSInteger)chs
-                   format:(AudioFormatID)format
-               samplerate:(CGFloat)sampleRate
-                     Path:(NSString*)savePath
 {
     if (self = [super init]) {
         self.savePath = savePath;
         self.dataWriter = [[AudioDataWriter alloc] init];
+        _isPlanner = planner;
         
-        self.audioSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryRecord channels:chs sampleRate:sampleRate bufferDuration:0.02 formatFlags:flags formatId:format];
+        ADAudioSaveType type = _isPlanner?ADAudioSaveTypePlanner:ADAudioSaveTypePacket;
+        self.audioSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryRecord channels:chs sampleRate:sampleRate bufferDuration:0.02 fortmatType:formatType saveType:type];
         
         // 来电，连上蓝牙，音箱等打断监听
         [self addInterruptListioner];
@@ -45,19 +50,15 @@
          *  访问肯定会奔溃
          *  解决方案：采用如下特殊的C语言方式来为AudioBufferList分配内存，这样mBuffers[1]就不会为NULL了
          */
-        BOOL isPlanner = [self.audioSession isPlanner];
+        /**遇到问题：AudioUnitRender fail ffffffce
+         * 解决思路：_ioUnit中指定个流格式类型为Packet的意味着mNumberBuffers必须为1，而这里_bufferList的mNumberBuffers固定为了
+         *  含有2个声道，不一致导致出错。两边保持一直
+         */
         _bufferList = (AudioBufferList *)malloc(sizeof(AudioBufferList) + (chs - 1) * sizeof(AudioBuffer));
-        
-        if (isPlanner) {
-            _bufferList->mNumberBuffers = (UInt32)chs;
-            for (NSInteger i=0; i<chs; i++) {
-                _bufferList->mBuffers[i].mData = malloc(BufferList_cache_size);
-                _bufferList->mBuffers[i].mDataByteSize = BufferList_cache_size;
-            }
-        } else {
-            _bufferList->mNumberBuffers = 1;
-            _bufferList->mBuffers[0].mData = malloc(BufferList_cache_size);
-            _bufferList->mBuffers[0].mDataByteSize = BufferList_cache_size;
+        _bufferList->mNumberBuffers = _isPlanner?(UInt32)chs:1;
+        for (NSInteger i=0; i<chs; i++) {
+            _bufferList->mBuffers[i].mData = malloc(BufferList_cache_size);
+            _bufferList->mBuffers[i].mDataByteSize = BufferList_cache_size;
         }
     }
     return self;
@@ -122,8 +123,8 @@
 - (void)createAudioUnitComponentDescription
 {
 
-    _iodes = [ADUnitTool descriptionWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
-    _convertdes = [ADUnitTool descriptionWithType:kAudioUnitType_FormatConverter subType:kAudioUnitSubType_AUConverter fucture:kAudioUnitManufacturer_Apple];
+    _iodes = [ADUnitTool comDesWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
+    _convertdes = [ADUnitTool comDesWithType:kAudioUnitType_FormatConverter subType:kAudioUnitSubType_AUConverter fucture:kAudioUnitManufacturer_Apple];
 }
 
 - (void)createAudioUnit
@@ -177,9 +178,11 @@
     
     // 2、设置麦克风的输出端参数属性，那么麦克风将按照指定的采样率，格式，存储方式来采集数据然后输出
     AudioFormatFlags flags = self.audioSession.formatFlags;
+    NSInteger _bytesPerchannel = self.audioSession.bytesPerChannel;
+    
     CGFloat rate = self.audioSession.currentSampleRate;
     NSInteger chs = self.audioSession.currentChannels;
-    AudioStreamBasicDescription des = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs];
+    AudioStreamBasicDescription des = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs bytesPerChannel:_bytesPerchannel];
     status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &des, sizeof(des));
     if (status != noErr) {
         NSLog(@"AudioUnitSetProperty _ioUnit kAudioUnitScope_Output fail %x",status);
@@ -223,8 +226,8 @@ static OSStatus InputRenderCallback(void *inRefCon,
 {
     AudioUnitRecorder *player = (__bridge AudioUnitRecorder*)inRefCon;
     UInt32 chs = (UInt32)player.audioSession.currentChannels;
-    BOOL isPlanner = [player.audioSession isPlanner];
-    int bytesPerChannel = [player.audioSession bytesPerChannel];
+    BOOL isPlanner = player->_isPlanner;
+    NSInteger bytesPerChannel = player.audioSession.bytesPerChannel;
     
     NSLog(@"录音 actionflags %u 时间 %f element %d frames %d channel %d planer %d 线程==>%@",*ioActionFlags,inTimeStamp->mSampleTime,inBusNumber,inNumberFrames,chs,isPlanner,[NSThread currentThread]);
     

@@ -82,15 +82,17 @@
 
 - (void)playPCM
 {
-        NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test_441_f32le_2" ofType:@"pcm"];
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    path = [path stringByAppendingPathComponent:@"test.PCM"];
+//        NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test_441_f32le_2" ofType:@"pcm"];
 //    NSString *l1path = [[NSBundle mainBundle] pathForResource:@"test_441_s16le_2" ofType:@"amr"];
     
-    //    self.basePlay = [[BaseUnitPlayer alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsNonInterleaved path:l1path];
-    //    [self.basePlay play];
+        self.basePlay = [[BaseUnitPlayer alloc] initWithChannels:2 sampleRate:44100 format:ADAudioFormatType32Float path:path];
+        [self.basePlay play];
     
-        self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsFloat | kAudioFormatFlagIsPacked path:l1path];
+//        self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 formatType:ADAudioFormatType32Float planner:YES path:path];
 //    self.unitPlay = [[ADAudioUnitPlay alloc] initWithChannels:2 sampleRate:44100 format:kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked path:l1path];
-    [self.unitPlay play];
+//    [self.unitPlay play];
 }
 
 /*

@@ -16,10 +16,10 @@
     BOOL isPlaying;
     NSString *_audioPath;
     
-    AudioFormatFlags _flags;
-    AudioFormatID    _formatId;
-    CGFloat          _sampleRate;
-    NSInteger        _channels;
+    ADAudioFormatType _flags;
+    BOOL              _planner;
+    CGFloat           _sampleRate;
+    NSInteger         _channels;
     
 }
 @property (strong, nonatomic) AudioUnitRecorder *audioUnitRecorder;
@@ -37,11 +37,11 @@
     NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
     _audioPath = [path stringByAppendingPathComponent:@"test.PCM"];
     NSLog(@"文件目录 ==>%@",_audioPath);
-    // planner 格式和 32位浮点数，PCM格式数据
-    _flags = kAudioFormatFlagIsSignedInteger|kAudioFormatFlagIsPacked;
-    _formatId = kAudioFormatLinearPCM;
+    // 16位整形
+    _flags = ADAudioFormatType32Float;
     _sampleRate = 44100;
     _channels = 2;
+    _planner = YES;
     
     self.recordBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     self.recordBtn.frame = CGRectMake(150, 200, 100, 50);
@@ -82,7 +82,7 @@
     } else {
         isRecording = YES;
         if (self.audioUnitRecorder == nil) {
-            self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatFlags:_flags channels:_channels format:_formatId samplerate:_sampleRate Path:_audioPath];
+            self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatType:_flags planner:_planner channels:_channels samplerate:_sampleRate Path:_audioPath];
         }
         
         [self.audioUnitRecorder startRecord];
@@ -99,7 +99,7 @@
     if (!isPlaying) {
         isPlaying = YES;
         if (self.audioUnitPlay == nil) {
-            self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithChannels:_channels sampleRate:_sampleRate format:_flags path:_audioPath];
+            self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithChannels:_channels sampleRate:_sampleRate formatType:_flags planner:_planner path:_audioPath];
         }
         [self.audioUnitPlay play];
         [self.playBtn setTitle:@"停止播放" forState:UIControlStateNormal];

@@ -46,7 +46,7 @@
  *   .kAudioUnitSubType_NewTimePitch:变速变调效果器
  */
 // 创建指定的类型
-+ (AudioComponentDescription)descriptionWithType:(OSType)type subType:(OSType)subType fucture:(OSType)manufuture
++ (AudioComponentDescription)comDesWithType:(OSType)type subType:(OSType)subType fucture:(OSType)manufuture
 {
     AudioComponentDescription acd;
     acd.componentType = type;
@@ -72,22 +72,19 @@
  *  一个Packet对应AudioBufferList的mBuffers中的一个元素，每个Packet包含一个或者多个Frame，每个Frame包含一个
  *  或者多个Channel，一个Channel就是一个采样。
  */
-+ (AudioStreamBasicDescription)streamDesWithLinearPCMformat:(AudioFormatFlags)flags sampleRate:(CGFloat)rate channels:(NSInteger)chs
++ (AudioStreamBasicDescription)streamDesWithLinearPCMformat:(AudioFormatFlags)flags
+                                                 sampleRate:(CGFloat)rate
+                                                   channels:(NSInteger)chs
+                                            bytesPerChannel:(NSInteger)bytesPerChann
 {
     
-    // 重要：设置数据格式 ios只支持16位整形和32位浮点型的播放;支持16位，32位整形录制和32位浮点型录制
-    UInt32 bytesPerChannel = 4;
-    if (flags & kAudioFormatFlagIsSignedInteger) {
-        bytesPerChannel = 2;
-    }
-
+    UInt32 bytesPerChannel = (UInt32)(bytesPerChann);
     BOOL isPlanner = flags & kAudioFormatFlagIsNonInterleaved;
     
     AudioStreamBasicDescription asbd;
     bzero(&asbd, sizeof(asbd));
     asbd.mSampleRate = rate;   // 采样率
     asbd.mFormatID = kAudioFormatLinearPCM; // 编码格式
-//    asbd.mFormatFlags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
     asbd.mFormatFlags = flags;//采样格式及存储方式
     asbd.mBitsPerChannel = 8 * bytesPerChannel;
     asbd.mChannelsPerFrame = (UInt32)chs; // 声道数

@@ -13,7 +13,13 @@
 @interface ADUnitTool : NSObject
 
 // 创建指定的组件描述
-+ (AudioComponentDescription)descriptionWithType:(OSType)type subType:(OSType)subType fucture:(OSType)manufuture;
-// 创建指定的LinePCM数据流描述
-+ (AudioStreamBasicDescription)streamDesWithLinearPCMformat:(AudioFormatFlags)flags sampleRate:(CGFloat)rate channels:(NSInteger)chs;
++ (AudioComponentDescription)comDesWithType:(OSType)type subType:(OSType)subType fucture:(OSType)manufuture;
+
+/** 创建用于音频的指定的LinePCM数据流描述
+ *  播放和录制：支持16位，32位整形和32位浮点型
+ */
++ (AudioStreamBasicDescription)streamDesWithLinearPCMformat:(AudioFormatFlags)flags
+                                                 sampleRate:(CGFloat)rate
+                                                   channels:(NSInteger)chs
+                                            bytesPerChannel:(NSInteger)bytesPerChannel;
 @end
