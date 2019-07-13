@@ -22,4 +22,6 @@
                                                  sampleRate:(CGFloat)rate
                                                    channels:(NSInteger)chs
                                             bytesPerChannel:(NSInteger)bytesPerChannel;
+
++ (void)printStreamFormat:(AudioStreamBasicDescription)streamASDB;
 @end

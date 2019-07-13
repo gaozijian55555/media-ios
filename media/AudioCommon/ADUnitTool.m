@@ -100,4 +100,15 @@
     
     return asbd;
 }
+
++ (void)printStreamFormat:(AudioStreamBasicDescription)streamASDB
+{
+    BOOL isPlanner = streamASDB.mFormatFlags & kAudioFormatFlagIsNonInterleaved;
+    BOOL isInteger = streamASDB.mFormatFlags & kAudioFormatFlagIsSignedInteger;
+    char formatIdChars[5];
+    UInt32 nativeFormatId = CFSwapInt32BigToHost(streamASDB.mFormatID);
+    memcpy(formatIdChars, &nativeFormatId, 4);
+    formatIdChars[4] = '\0';
+    NSLog(@"planner %d integer %d formatID %s channels %d bytesPerChannel %d bytesPerFrame %d bytesPerPacket %d",isPlanner,isInteger,formatIdChars,streamASDB.mChannelsPerFrame,streamASDB.mBitsPerChannel/8,streamASDB.mBytesPerFrame,streamASDB.mBytesPerPacket);
+}
 @end

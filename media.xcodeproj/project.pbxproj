@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F411F11722CE32AC00C60488 /* ADExtAudioFile.m in Sources */ = {isa = PBXBuildFile; fileRef = F411F11622CE32AC00C60488 /* ADExtAudioFile.m */; };
+		F411F12322CEDA5500C60488 /* dropdownFlag@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = F411F11F22CEDA5500C60488 /* dropdownFlag@3x.png */; };
+		F411F12422CEDA5500C60488 /* dropdownFlag@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F411F12022CEDA5500C60488 /* dropdownFlag@2x.png */; };
+		F411F12522CEDA5500C60488 /* EBDropdownListView.m in Sources */ = {isa = PBXBuildFile; fileRef = F411F12122CEDA5500C60488 /* EBDropdownListView.m */; };
+		F411F12922D0373300C60488 /* background.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F411F12822D0373300C60488 /* background.mp3 */; };
 		F4358FDB2290F11600D63289 /* BaseUnitPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */; };
 		F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */ = {isa = PBXBuildFile; fileRef = F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */; };
 		F4358FEF2294ECB800D63289 /* test_441_s16le_2.amr in Resources */ = {isa = PBXBuildFile; fileRef = F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */; };
@@ -22,6 +27,8 @@
 		F45E46E2228F884900C7DBF9 /* ADAVPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46E1228F884900C7DBF9 /* ADAVPlayer.m */; };
 		F45E46E5228F888000C7DBF9 /* ADAVAudioPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = F45E46E4228F888000C7DBF9 /* ADAVAudioPlayer.m */; };
 		F45E46E7228F8AF600C7DBF9 /* test-mp3-1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */; };
+		F460446322D57E7600D0BE5F /* AudioUnitGenericOutput.m in Sources */ = {isa = PBXBuildFile; fileRef = F460446222D57E7600D0BE5F /* AudioUnitGenericOutput.m */; };
+		F460446622D6DD0200D0BE5F /* CommonFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = F460446522D6DD0200D0BE5F /* CommonFunction.m */; };
 		F4908D1C22ABB44B002566FF /* GLFrameBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D0E22ABB44A002566FF /* GLFrameBuffer.m */; };
 		F4908D1D22ABB44B002566FF /* GLRenderYUVSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1222ABB44A002566FF /* GLRenderYUVSource.m */; };
 		F4908D1E22ABB44B002566FF /* GLRenderRGBSource.m in Sources */ = {isa = PBXBuildFile; fileRef = F4908D1422ABB44A002566FF /* GLRenderRGBSource.m */; };
@@ -44,6 +51,13 @@
 
 /* Begin PBXFileReference section */
 		F411F11422C99B6B00C60488 /* ADAudioDefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAudioDefine.h; sourceTree = "<group>"; };
+		F411F11522CE32AC00C60488 /* ADExtAudioFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADExtAudioFile.h; sourceTree = "<group>"; };
+		F411F11622CE32AC00C60488 /* ADExtAudioFile.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADExtAudioFile.m; sourceTree = "<group>"; };
+		F411F11F22CEDA5500C60488 /* dropdownFlag@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dropdownFlag@3x.png"; sourceTree = "<group>"; };
+		F411F12022CEDA5500C60488 /* dropdownFlag@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "dropdownFlag@2x.png"; sourceTree = "<group>"; };
+		F411F12122CEDA5500C60488 /* EBDropdownListView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EBDropdownListView.m; sourceTree = "<group>"; };
+		F411F12222CEDA5500C60488 /* EBDropdownListView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EBDropdownListView.h; sourceTree = "<group>"; };
+		F411F12822D0373300C60488 /* background.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = background.mp3; sourceTree = "<group>"; };
 		F4358FD92290F11600D63289 /* BaseUnitPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BaseUnitPlayer.h; sourceTree = "<group>"; };
 		F4358FDA2290F11600D63289 /* BaseUnitPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BaseUnitPlayer.m; sourceTree = "<group>"; };
 		F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */ = {isa = PBXFileReference; lastKnownFileType = file; path = test_441_f32le_2.pcm; sourceTree = "<group>"; };
@@ -69,6 +83,10 @@
 		F45E46E3228F888000C7DBF9 /* ADAVAudioPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAVAudioPlayer.h; sourceTree = "<group>"; };
 		F45E46E4228F888000C7DBF9 /* ADAVAudioPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADAVAudioPlayer.m; sourceTree = "<group>"; };
 		F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "test-mp3-1.mp3"; sourceTree = "<group>"; };
+		F460446122D57E7600D0BE5F /* AudioUnitGenericOutput.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioUnitGenericOutput.h; sourceTree = "<group>"; };
+		F460446222D57E7600D0BE5F /* AudioUnitGenericOutput.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioUnitGenericOutput.m; sourceTree = "<group>"; };
+		F460446422D6DD0200D0BE5F /* CommonFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonFunction.h; sourceTree = "<group>"; };
+		F460446522D6DD0200D0BE5F /* CommonFunction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CommonFunction.m; sourceTree = "<group>"; };
 		F4908D0B22ABB44A002566FF /* GLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLUtils.h; sourceTree = "<group>"; };
 		F4908D0C22ABB44A002566FF /* CGImageUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGImageUtils.h; sourceTree = "<group>"; };
 		F4908D0D22ABB44A002566FF /* GLRenderSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLRenderSource.h; sourceTree = "<group>"; };
@@ -120,6 +138,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F411F11E22CEDA5500C60488 /* EBDropdownList */ = {
+			isa = PBXGroup;
+			children = (
+				F411F11F22CEDA5500C60488 /* dropdownFlag@3x.png */,
+				F411F12022CEDA5500C60488 /* dropdownFlag@2x.png */,
+				F411F12122CEDA5500C60488 /* EBDropdownListView.m */,
+				F411F12222CEDA5500C60488 /* EBDropdownListView.h */,
+			);
+			path = EBDropdownList;
+			sourceTree = "<group>";
+		};
 		F45E4675228A514E00C7DBF9 = {
 			isa = PBXGroup;
 			children = (
@@ -181,6 +210,7 @@
 				F4358FEE2294ECB800D63289 /* test_441_s16le_2.amr */,
 				F4358FE0229230F900D63289 /* test_441_f32le_2.pcm */,
 				F45E46E6228F8AF600C7DBF9 /* test-mp3-1.mp3 */,
+				F411F12822D0373300C60488 /* background.mp3 */,
 			);
 			path = fileResources;
 			sourceTree = "<group>";
@@ -221,6 +251,8 @@
 				F4E146FD22C0593C00FB1D13 /* 采集音频.md */,
 				F4E1470922C077D400FB1D13 /* AudioUnitRecorder.h */,
 				F4E1470A22C077D400FB1D13 /* AudioUnitRecorder.m */,
+				F460446122D57E7600D0BE5F /* AudioUnitGenericOutput.h */,
+				F460446222D57E7600D0BE5F /* AudioUnitGenericOutput.m */,
 			);
 			path = AudioRecorder;
 			sourceTree = "<group>";
@@ -245,6 +277,10 @@
 				F4E1470322C0776500FB1D13 /* AVAudioSession+extion.m */,
 				F44F230122C32BD400A58FD0 /* AudioDataWriter.h */,
 				F44F230222C32BD400A58FD0 /* AudioDataWriter.m */,
+				F411F11522CE32AC00C60488 /* ADExtAudioFile.h */,
+				F411F11622CE32AC00C60488 /* ADExtAudioFile.m */,
+				F460446422D6DD0200D0BE5F /* CommonFunction.h */,
+				F460446522D6DD0200D0BE5F /* CommonFunction.m */,
 			);
 			path = AudioCommon;
 			sourceTree = "<group>";
@@ -252,6 +288,7 @@
 		F4E1470C22C079DD00FB1D13 /* Activities */ = {
 			isa = PBXGroup;
 			children = (
+				F411F11E22CEDA5500C60488 /* EBDropdownList */,
 				F4E1470D22C07A0A00FB1D13 /* AudioPlayerViewController.h */,
 				F4E1470E22C07A0A00FB1D13 /* AudioPlayerViewController.m */,
 				F4E1471022C07A1C00FB1D13 /* VideoPlayerViewController.h */,
@@ -319,10 +356,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F411F12322CEDA5500C60488 /* dropdownFlag@3x.png in Resources */,
 				F45E468E228A514F00C7DBF9 /* LaunchScreen.storyboard in Resources */,
 				F4D0B1F222B0BD8500195205 /* test-420P-320x160.yuv in Resources */,
+				F411F12422CEDA5500C60488 /* dropdownFlag@2x.png in Resources */,
 				F4358FE1229230F900D63289 /* test_441_f32le_2.pcm in Resources */,
 				F45E468B228A514F00C7DBF9 /* Assets.xcassets in Resources */,
+				F411F12922D0373300C60488 /* background.mp3 in Resources */,
 				F4358FEF2294ECB800D63289 /* test_441_s16le_2.amr in Resources */,
 				F45E46E7228F8AF600C7DBF9 /* test-mp3-1.mp3 in Resources */,
 				F45E4689228A514E00C7DBF9 /* Main.storyboard in Resources */,
@@ -347,11 +387,14 @@
 				F4E1471522C07A3900FB1D13 /* AudioRecorderViewController.m in Sources */,
 				F45E4691228A514F00C7DBF9 /* main.m in Sources */,
 				F4908D2F22ADEBD3002566FF /* VideoFileSource.m in Sources */,
+				F411F12522CEDA5500C60488 /* EBDropdownListView.m in Sources */,
 				F4E1470822C0776600FB1D13 /* ADUnitTool.m in Sources */,
 				F4E1470B22C077D400FB1D13 /* AudioUnitRecorder.m in Sources */,
+				F460446622D6DD0200D0BE5F /* CommonFunction.m in Sources */,
 				F4472DE822C22F9B00C52CCC /* ADAudioSession.m in Sources */,
 				F4908D1C22ABB44B002566FF /* GLFrameBuffer.m in Sources */,
 				F45E46D9228F87CC00C7DBF9 /* ADAudioUnitPlay.m in Sources */,
+				F460446322D57E7600D0BE5F /* AudioUnitGenericOutput.m in Sources */,
 				F4908D2022ABB44B002566FF /* GLUtils.m in Sources */,
 				F4908D2922ABB751002566FF /* YuvPlayer.m in Sources */,
 				F4E1470722C0776600FB1D13 /* AVAudioSession+extion.m in Sources */,
@@ -360,6 +403,7 @@
 				F4908D1D22ABB44B002566FF /* GLRenderYUVSource.m in Sources */,
 				F4E1471222C07A1C00FB1D13 /* VideoPlayerViewController.m in Sources */,
 				F4E1470F22C07A0A00FB1D13 /* AudioPlayerViewController.m in Sources */,
+				F411F11722CE32AC00C60488 /* ADExtAudioFile.m in Sources */,
 				F4908D1E22ABB44B002566FF /* GLRenderRGBSource.m in Sources */,
 				F4908D2122ABB44B002566FF /* GLRenderSource.m in Sources */,
 			);
@@ -506,7 +550,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = AKBWT3F327;
 				INFOPLIST_FILE = media/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -524,7 +568,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = AKBWT3F327;
 				INFOPLIST_FILE = media/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

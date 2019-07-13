@@ -16,5 +16,6 @@
 #import "ADUnitTool.h"
 #import "ADAudioSession.h"
 #import "AVAudioSession+extion.h"
+#import "CommonFunction.h"
 
 #endif /* AudioCommon_h */
