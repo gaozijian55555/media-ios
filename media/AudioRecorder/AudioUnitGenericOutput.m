@@ -10,18 +10,54 @@
 
 @implementation AudioUnitGenericOutput
 
-- (id)initWithPath1:(NSString*)path1 path2:(NSString*)path2
+- (id)initWithPath1:(NSString*)path1 volume:(float)vol1 path2:(NSString*)path2 volume:(float)vol2;
 {
     if (self = [super init]) {
         self.source1 = path1;
-        self.source1 = path2;
-        
-        [self setupAUGraph];
-        [self setupSource:path1 sourceFileID:_source1FileID player:_source1Unit];
-        [self setupSource:path2 sourceFileID:_source2FileID player:_source2Unit];
-        
+        self.source2 = path2;
+        _volume[0] = vol1 == 0.0?1.0:vol1;
+        _volume[1] = vol2 == 0.0?1.0:vol2;
     }
     return self;
+}
+
+- (void)setupFormat:(ADAudioFormatType)format
+      audioSaveType:(ADAudioSaveType)saveType
+         sampleRate:(UInt32)samplerate
+           channels:(UInt32)channels
+           savePath:(NSString*)savePath
+       saveFileType:(ADAudioFileType)type
+{
+    AudioStreamBasicDescription clientABSD;
+    AudioFormatFlags flags;
+    UInt32 bytesPerChannel = 2;
+    if (format == ADAudioFormatType16Int) {
+        flags = kAudioFormatFlagIsSignedInteger | ((saveType==ADAudioSaveTypePlanner)?kAudioFormatFlagIsNonInterleaved:kAudioFormatFlagIsPacked);
+    } else if(format == ADAudioFormatType32Int){
+        flags = kAudioFormatFlagIsSignedInteger | ((saveType==ADAudioSaveTypePlanner)?kAudioFormatFlagIsNonInterleaved:kAudioFormatFlagIsPacked);
+        bytesPerChannel = 4;
+    } else {
+        flags = kAudioFormatFlagIsFloat | ((saveType==ADAudioSaveTypePlanner)?kAudioFormatFlagIsNonInterleaved:kAudioFormatFlagIsPacked);
+        bytesPerChannel = 4;
+    }
+    clientABSD = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:samplerate channels:channels bytesPerChannel:bytesPerChannel];
+    
+    AudioFileTypeID typeId = kAudioFileCAFType;
+    if (type == ADAudioFileTypeCAF) {
+        typeId = kAudioFileCAFType;
+    } else if(type == ADAudioFileTypeWAV){
+        typeId = kAudioFileWAVEType;
+    } else if(type == ADAudioFileTypeMP3){
+        typeId = kAudioFileMP3Type;
+    } else if(type == ADAudioFileTypeM4A){
+        typeId = kAudioFileM4AType;
+    }
+    _extFileWriter = [[ADExtAudioFile alloc] initWithWritePath:savePath adsb:clientABSD fileTypeId:typeId];
+    
+    
+    [self setupAUGraph];
+    [self setupSource:_source1 sourceFileID:_source1FileID player:_source1Unit];
+    [self setupSource:_source2 sourceFileID:_source2FileID player:_source2Unit];
 }
 
 - (void)setupAUGraph
@@ -34,7 +70,6 @@
      *  同时后者还封装了写数据到文件中
      *  共同点就是两者都只能操作带有属性信息的音频封装文件，比如M4A，MP3，对于裸数据PCM文件则无法操作
      */
-    // 从文件中读取数据并解码
     AudioComponentDescription source1 = [ADUnitTool comDesWithType:kAudioUnitType_Generator subType:kAudioUnitSubType_AudioFilePlayer fucture:kAudioUnitManufacturer_Apple];
     CheckStatusReturn(AUGraphAddNode(_auGraph, &source1, &_source1Node),@"AUGraphAddNode _source1Node error");
     
@@ -74,11 +109,14 @@
         return;
     }
     
-    AudioFormatFlags flags = kAudioFormatFlagIsSignedInteger|kAudioFormatFlagIsPacked;
+    // 从音频文件中读取数据解码后的音频数据格式;经过测试，发现只支持AudioFilePlayer解码后输出的数据格式只支持
+    // kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved;
+    AudioFormatFlags flags = kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved;
     AudioStreamBasicDescription inputASDB = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:44100 channels:2 bytesPerChannel:4];
+    CheckStatusReturn(AudioUnitSetProperty(_source1Unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &inputASDB, sizeof(inputASDB)), @"AudioUnitSetProperty _source1Unit output");
+    CheckStatusReturn(AudioUnitSetProperty(_source2Unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &inputASDB, sizeof(inputASDB)), @"AudioUnitSetProperty _source2Unit output");
     
-    AudioStreamBasicDescription outputASBD = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:44100 channels:2 bytesPerChannel:2];
-    
+   
     // 配置混音器的输入bus 数目
     UInt32 busCount   = 2;    // bus count for mixer unit input
     AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_ElementCount, kAudioUnitScope_Input, 0, &busCount, sizeof(busCount));
@@ -87,15 +125,25 @@
     UInt32 onvalue = 1;
     AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_MeteringMode, kAudioUnitScope_Input, 0, &onvalue, sizeof(onvalue));
     
-    // 设置mixer unit单元每次处理(调用AudioUnitRender()函数时)frames的最大数目，kAudioUnitScope_Global代表对输入和输出都有效
+    // 设置mixer unit单元每次处理(调用AudioUnitRender()函数时)frames的最大数目，一般混音器设置，kAudioUnitScope_Global代表对输入和输出都有效
     UInt32 maximumFramesPerSlice = 4096;
     CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_MaximumFramesPerSlice, kAudioUnitScope_Global, 0, &maximumFramesPerSlice, sizeof(maximumFramesPerSlice)), @"AudioUnitSetProperty maximumFramesPerSlice");
     
-    // 设置混音器的输出数据格式
-    CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &outputASBD, sizeof(outputASBD)), @"AudioUnitSetProperty outputASBD");
+    // 混音器输入接口的数据格式
+    CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &inputASDB, sizeof(inputASDB)), @"AudioUnitSetProperty inputASDB");
+    CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 1, &inputASDB, sizeof(inputASDB)), @"AudioUnitSetProperty inputASDB");
     
-    AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &inputASDB, sizeof(inputASDB));
-    AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &inputASDB, sizeof(inputASDB));
+    // 设置各路音频混合后的音量
+    CheckStatusReturn(AudioUnitSetParameter(_mixerUnit,kMultiChannelMixerParam_Volume, kAudioUnitScope_Input, 0, _volume[0], 0), @"AudioUnitSetProperty inputASDB");
+    CheckStatusReturn(AudioUnitSetParameter(_mixerUnit,kMultiChannelMixerParam_Volume, kAudioUnitScope_Input, 1, _volume[1], 0), @"AudioUnitSetProperty inputASDB");
+    
+    // 音频文件经过混音器混合后输出的数据格式
+    AudioStreamBasicDescription mixerASBD = _extFileWriter.clientABSD;
+    CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &mixerASBD, sizeof(mixerASBD)), @"AudioUnitSetProperty outputASBD");
+    
+    // 设置generic output 输入输出数据格式
+    AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &mixerASBD, sizeof(inputASDB));
+    AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &mixerASBD, sizeof(inputASDB));
     
     // 将文件1和文件2的音频 输入mixer进行混音处理
     CheckStatusReturn(AUGraphConnectNodeInput(_auGraph, _source1Node, 0, _mixerNode, 0), @"AUGraphConnectNodeInput 1");
@@ -143,9 +191,12 @@
     rgn.mCompletionProc = NULL; // 数据读取完毕之后的回调函数
     rgn.mCompletionProcUserData = NULL; // 传给回调函数的对象
     rgn.mAudioFile = sourceFileID;  // 要读取的文件句柄
-    rgn.mLoopCount = -1;    // 是否循环读取，0不循环，-1 一直循环 其它值循环的具体次数
+    rgn.mLoopCount = 0;    // 是否循环读取，0不循环，-1 一直循环 其它值循环的具体次数
     rgn.mStartFrame = 0;    // 读取的起始的frame 索引
     rgn.mFramesToPlay = (UInt32)nPackets * fileASBD.mFramesPerPacket;   // 从读取的起始frame 索引开始，总共要读取的frames数目
+    if (_totalFrames < rgn.mFramesToPlay) {
+        _totalFrames = rgn.mFramesToPlay;
+    }
     
     /** 遇到问题：返回-10867
      *  解决思路：设置kAudioUnitProperty_ScheduledFileRegion前要先调用AUGraphInitialize(_auGraph);初始化AUGraph
@@ -199,6 +250,7 @@
         return;
     }
     
+    _offlineRun = YES;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [self offlineRenderThread];
     });
@@ -235,7 +287,7 @@
     memset(&inTimeStamp, 0, sizeof(inTimeStamp));
     inTimeStamp.mFlags = kAudioTimeStampSampleTimeValid;
     inTimeStamp.mSampleTime = 0;
-    UInt32 framesPerRead = 512;
+    UInt32 framesPerRead = 512*2;
     UInt32 bytesPerFrame = outputASDB.mBytesPerFrame;
     int channelCount = outputASDB.mChannelsPerFrame;
     int bufferListcout = channelCount;
@@ -257,7 +309,14 @@
         bufferlist->mBuffers[i] = buffer;
     }
     
-    while (_offlineRun) {
+    UInt32 totalFrames = _totalFrames;
+    while (_offlineRun && totalFrames > 0) {
+        
+        if (totalFrames < framesPerRead) {
+            framesPerRead = totalFrames;
+        } else {
+            totalFrames -= framesPerRead;
+        }
         
         // 从generic output unit中将数据渲染出来
         /** 遇到问题：返回-50；
@@ -270,13 +329,14 @@
          *  调用此函数将向_genericUnit要数据，如果_genericUnit有设置inputCallBack回调，那么回调函数将被调用。
          */
         OSStatus status = AudioUnitRender(_genericUnit,&flags,&inTimeStamp,0,framesPerRead,bufferlist);
-        if (status == noErr) {
-            inTimeStamp.mSampleTime += framesPerRead;
-            // 将渲染得到的数据保存下来
-        } else {
+        if (status != noErr) {
+            NSLog(@"出错了 即将结束写入");
             _offlineRun = NO;
-            break;
         }
+        
+        inTimeStamp.mSampleTime += framesPerRead;
+        // 将渲染得到的数据保存下来
+        [_extFileWriter writeFrames:framesPerRead toBufferData:bufferlist];
     }
     
     // 释放内存
@@ -290,6 +350,13 @@
         free(bufferlist);
         bufferlist = NULL;
     }
+    
+    /** 遇到问题：生成的混音文件无法正常播放
+     *  问题原因：通过ExtAudioFileRef生成的封装格式的文件必须要调用ExtAudioFileDispose()函数才会正常生成音频文件属性，由于没有调用导致此问题
+     *  解决方案：混音结束后调用ExtAudioFileDispose()即可。
+     */
+    [_extFileWriter closeFile];
+    NSLog(@"渲染线程结束");
 }
 
 static OSStatus mixerInputDataCallback(void *inRefCon,

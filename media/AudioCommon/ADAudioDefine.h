@@ -37,4 +37,13 @@ typedef enum : NSUInteger {
     ADAudioSaveTypePlanner,
 }ADAudioSaveType;
 
+
+/** 音频文件封装格式，以下是常见的封装格式 mp3 mp4 caf wav等等，其中前面两个用于存储压缩的音频数据，后面两个用于存储未压缩音频数据
+ */
+typedef enum : NSUInteger {
+    ADAudioFileTypeMP3,
+    ADAudioFileTypeM4A,
+    ADAudioFileTypeWAV,
+    ADAudioFileTypeCAF
+}ADAudioFileType;
 #endif /* ADAudioDefine_h */

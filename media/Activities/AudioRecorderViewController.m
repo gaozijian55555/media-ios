@@ -52,7 +52,7 @@
     
     self.recordBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     self.recordBtn.frame = CGRectMake(150, 200, 100, 50);
-    [self.recordBtn setTitle:@"开始录音" forState:UIControlStateNormal];
+    [self.recordBtn setTitle:@"开始" forState:UIControlStateNormal];
     [self.view addSubview:self.recordBtn];
     [self.recordBtn addTarget:self action:@selector(onTapRecordBtn:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -71,7 +71,7 @@
     
     EBDropdownListItem *item1 = [[EBDropdownListItem alloc] initWithItem:@"1" itemName:@"录制音频"];
     EBDropdownListItem *item2 = [[EBDropdownListItem alloc] initWithItem:@"2" itemName:@"边录边播"];
-    EBDropdownListItem *item3 = [[EBDropdownListItem alloc] initWithItem:@"3" itemName:@"离线音频处理"];
+    EBDropdownListItem *item3 = [[EBDropdownListItem alloc] initWithItem:@"3" itemName:@"离线音频混合"];
     EBDropdownListItem *item4 = [[EBDropdownListItem alloc] initWithItem:@"4" itemName:@"单纯混音录音"];
     EBDropdownListItem *item5 = [[EBDropdownListItem alloc] initWithItem:@"5" itemName:@"混音且边录边播"];
     _dropdownListView = [[EBDropdownListView alloc] initWithDataSource:@[item1, item2, item3,item4,item5]];
@@ -80,9 +80,42 @@
     [_dropdownListView setViewBorder:0.5 borderColor:[UIColor grayColor] cornerRadius:2];
     [self.view addSubview:_dropdownListView];
     
+    self.playBtn.hidden = YES;
+    [self.recordBtn setTitle:@"开始" forState:UIControlStateNormal];
+    
     __weak typeof(self)weakSelf = self;
     [_dropdownListView setDropdownListViewSelectedBlock:^(EBDropdownListView *dropdownListView) {
+        [weakSelf stopRecord];
+        [weakSelf stopPlay];
         
+        if (dropdownListView.selectedIndex == 0) {
+            [weakSelf.playBtn setTitle:@"开始" forState:UIControlStateNormal];
+            weakSelf.playBtn.hidden = NO;
+            [weakSelf.recordBtn setTitle:@"开始播放" forState:UIControlStateNormal];
+            weakSelf.recordBtn.hidden = NO;
+        } else if(dropdownListView.selectedIndex == 1){
+            [weakSelf.playBtn setTitle:@"开始" forState:UIControlStateNormal];
+            weakSelf.playBtn.hidden = NO;
+            [weakSelf.recordBtn setTitle:@"开始播放" forState:UIControlStateNormal];
+            weakSelf.recordBtn.hidden = NO;
+        } else if(dropdownListView.selectedIndex == 2){
+            [weakSelf.playBtn setTitle:@"开始" forState:UIControlStateNormal];
+            weakSelf.playBtn.hidden = NO;
+            [weakSelf.recordBtn setTitle:@"开始播放" forState:UIControlStateNormal];
+            weakSelf.recordBtn.hidden = YES;
+        } else if(dropdownListView.selectedIndex == 3){
+            [weakSelf.playBtn setTitle:@"开始" forState:UIControlStateNormal];
+            weakSelf.playBtn.hidden = NO;
+            [weakSelf.recordBtn setTitle:@"开始播放" forState:UIControlStateNormal];
+            weakSelf.recordBtn.hidden = YES;
+        } else if(dropdownListView.selectedIndex == 4){
+            [weakSelf.playBtn setTitle:@"开始" forState:UIControlStateNormal];
+            weakSelf.playBtn.hidden = NO;
+            [weakSelf.recordBtn setTitle:@"开始播放" forState:UIControlStateNormal];
+            weakSelf.recordBtn.hidden = YES;
+        } else if(dropdownListView.selectedIndex == 5){
+            
+        }
     }];
 }
 
@@ -98,11 +131,12 @@
 
 - (void)stopRecord
 {
+    isRecording = NO;
     if (self.audioUnitRecorder) {
         [self.audioUnitRecorder stopRecord];
         self.audioUnitRecorder = nil;
     }
-    [self.recordBtn setTitle:@"开始录音" forState:UIControlStateNormal];
+    [self.recordBtn setTitle:@"开始" forState:UIControlStateNormal];
 }
 - (void)onTapRecordBtn:(UIButton*)btn
 {
@@ -126,7 +160,8 @@
                 // 由于AudioFilePlayer无法读取PCM裸数据文件，所以这里用MP3
                 NSString *file1 = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"mp3"];
                 NSString *file2 = [[NSBundle mainBundle] pathForResource:@"test-mp3-1" ofType:@"mp3"];
-                self.audioGenericOutput = [[AudioUnitGenericOutput alloc] initWithPath1:file1 path2:file2];
+                self.audioGenericOutput = [[AudioUnitGenericOutput alloc] initWithPath1:file1 volume:0.1 path2:file2 volume:0.9];
+                [self.audioGenericOutput setupFormat:ADAudioFormatType16Int audioSaveType:ADAudioSaveTypePacket sampleRate:44100 channels:2 savePath:_audioPath saveFileType:ADAudioFileTypeM4A];
                 [self.audioGenericOutput start];
             } else if(_selectIndex == 3){
                 NSString *mixerPath = [[NSBundle mainBundle] pathForResource:audioFile ofType:@"mp3"];
@@ -139,7 +174,7 @@
             }
         }
         
-        [self.recordBtn setTitle:@"停止录音" forState:UIControlStateNormal];
+        [self.recordBtn setTitle:@"停止" forState:UIControlStateNormal];
     }
 }
 
