@@ -6,6 +6,11 @@
 //  Copyright © 2019 飞拍科技. All rights reserved.
 //
 
+// 参考文档
+// https://stackoverflow.com/questions/13309103/augraph-record-and-play-with-remoteio-and-multichannelmixer
+// https://stackoverflow.com/questions/15153008/pull-audio-data-from-graph-kaudiounitsubtype-genericoutput#
+
+
 #import "AudioUnitGenericOutput.h"
 
 @implementation AudioUnitGenericOutput

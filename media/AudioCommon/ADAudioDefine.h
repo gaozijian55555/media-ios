@@ -38,12 +38,27 @@ typedef enum : NSUInteger {
 }ADAudioSaveType;
 
 
-/** 音频文件封装格式，以下是常见的封装格式 mp3 mp4 caf wav等等，其中前面两个用于存储压缩的音频数据，后面两个用于存储未压缩音频数据
+/** 音频文件封装格式，
+ *  ADAudioFileTypeLPCM 是单纯的裸PCM数据，没有音频属性数据；裸PCM数据文件不能用AudioFilePlayer和ExtAudioFileRef读写，只能用
+ *  NSInputStream和NSOutputStream等流式接口进行读写
+ *  ADAudioFileTypeMP3和ADAudioFileTypeM4A 用于存储压缩的音频数据
+ *  ADAudioFileTypeWAV和ADAudioFileTypeCAF 用于存储未压缩音频数据
  */
 typedef enum : NSUInteger {
+    ADAudioFileTypeLPCM,
     ADAudioFileTypeMP3,
     ADAudioFileTypeM4A,
     ADAudioFileTypeWAV,
     ADAudioFileTypeCAF
 }ADAudioFileType;
+
+
+struct _AudioFormat {
+    ADAudioFormatType formatType;
+    ADAudioSaveType   saveType;
+    UInt32            samplerate;
+    UInt32            channels;
+};
+typedef struct _AudioFormat ADAudioFormat;
+
 #endif /* ADAudioDefine_h */

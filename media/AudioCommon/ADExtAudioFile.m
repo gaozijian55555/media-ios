@@ -60,7 +60,7 @@
     // 对于从文件中读数据，app属于客户端。对于向文件中写入数据，app也属于客户端
     // 设置从文件中读取数据后经过解码等步骤后最终输出的数据格式
     size = sizeof(_clientabsdForReader);
-    status = ExtAudioFileSetProperty(_audioFile, kExtAudioFileProperty_ClientDataFormat, size, &_clientabsdForReader);
+    status = ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_ClientDataFormat, &size, &_clientabsdForReader);
     if (status != noErr) {
         NSLog(@"ExtAudioFileSetProperty kExtAudioFileProperty_ClientDataFormat fail %d",status);
         return;

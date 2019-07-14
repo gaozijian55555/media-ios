@@ -18,9 +18,10 @@
                 channels:(NSInteger)chs
               samplerate:(CGFloat)sampleRate
                     Path:(NSString*)savePath
+            saveFileType:(ADAudioFileType)fileType
 
 {
-    return [self initWithFormatType:formatType planner:planner channels:chs samplerate:sampleRate Path:savePath recordAndPlay:NO];
+    return [self initWithFormatType:formatType planner:planner channels:chs samplerate:sampleRate Path:savePath recordAndPlay:NO saveFileType:ADAudioFileTypeLPCM];
 }
 
 - (id)initWithFormatType:(ADAudioFormatType)formatType
@@ -29,9 +30,10 @@
               samplerate:(CGFloat)sampleRate
                     Path:(NSString*)savePath
            recordAndPlay:(BOOL)yesOrnot
+            saveFileType:(ADAudioFileType)fileType
 {
     
-    return [self initWithFormatType:formatType planner:planner channels:chs samplerate:sampleRate Path:savePath recordAndPlay:yesOrnot mixerPath:nil];
+    return [self initWithFormatType:formatType planner:planner channels:chs samplerate:sampleRate Path:savePath backgroundMusicPath:nil recordAndPlay:yesOrnot saveFileType:fileType];
 }
 
 - (id)initWithFormatType:(ADAudioFormatType)formatType
@@ -39,12 +41,13 @@
                 channels:(NSInteger)chs
               samplerate:(CGFloat)sampleRate
                     Path:(NSString*)savePath
+     backgroundMusicPath:(NSString*)backgroundPath
            recordAndPlay:(BOOL)yesOrnot
-               mixerPath:(NSString*)mixerpath
+            saveFileType:(ADAudioFileType)fileType
 {
     if (self = [super init]) {
-        self.savePath = savePath;
-        self.dataWriter = [[AudioDataWriter alloc] init];
+    
+        self.dataWriteForPCM = [[AudioDataWriter alloc] initWithPath:savePath];
         _isPlanner = planner;
         _isEnablePlayWhenRecord = yesOrnot;
         _enableMixer = NO;
@@ -66,7 +69,7 @@
         [self createAudioUnit];
         
         // 设置混音，如果有的话
-        [self setMixerPath:mixerpath];
+        [self setBackgroundMusicMixerPath:backgroundPath];
         
         // 设置各个AudioUnit的属性
         [self setupAudioUnitsProperty];
@@ -116,7 +119,7 @@
  *  对于ios平台，提供了Mixer混音器，它提供了内置的混音算法供我们使用，我们只需要指定要混合的音轨数，混合后音轨音量大
  *  小，确定每路音轨的采样率一致等等配置参数即可。
  */
-- (void)setMixerPath:(NSString *)path
+- (void)setBackgroundMusicMixerPath:(NSString *)path
 {
     if (path == nil) {
         NSLog(@"混音文件路径为空");
@@ -157,7 +160,7 @@
 - (void)startRecord
 {
     // 删除之前文件
-    [self.dataWriter deletePath:_savePath];
+    [self.dataWriteForPCM deletePath];
     
     OSStatus status = noErr;
 
@@ -310,7 +313,7 @@
         /** 指定混音器的输入音轨数目，这里是混合的音频文件和录音的音频数据，所以是两个
          *  备注：混音器可以有多个输入，但是只有一个输出，AudioUnitElement值为0
          */
-        UInt32 mixerInputcount = 2;
+        UInt32 mixerInputcount = _isEnablePlayWhenRecord?2:1;
         AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_ElementCount, kAudioUnitScope_Input, 0, &mixerInputcount, sizeof(mixerInputcount));
         
         // 指定混音器的采样率
@@ -351,11 +354,11 @@
 {
     if (!_enableMixer) {
         
-        if (_isEnablePlayWhenRecord) {      // 麦克风的输出作为扬声器的输入 即开启了边录边播的功能
+        if (_isEnablePlayWhenRecord) {      // 麦克风的输出作为扬声器的输入 即开启了耳返效果
             AUGraphConnectNodeInput(_augraph, _ioNode, 1, _ioNode, 0);
         }
         
-        if (_savePath != nil) {
+        if (self.dataWriteForNonPCM||self.dataWriteForPCM) {
             AURenderCallbackStruct callback;
             callback.inputProc = saveOutputCallback;
             callback.inputProcRefCon = (__bridge void*)self;
@@ -365,21 +368,13 @@
             AudioUnitSetProperty(_ioUnit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Output, 1, &callback, sizeof(callback));
         }
         return;
-    } else {
+    } else {        // 如果播放背景音乐
         OSStatus status = noErr;
-        if (_isEnablePlayWhenRecord) {
-            // 如果开启了边录边播功能，则这里要将混音器的输出作为扬声器的输入
-            AUGraphConnectNodeInput(_augraph, _mixerNode, 0, _ioNode, 0);
-        } else {
-            // 没有开启边录边播的功能，则使用generic output unit 进行离线音频输出(也就是不输出到具体的硬件设备，如扬声器等等)
-            status = AUGraphConnectNodeInput(_augraph, _mixerNode, 0, _ioNode, 0);
-            if (status != noErr) {
-                NSLog(@"AUGraphConnectNodeInput _genericOutNode %d",status);
-            }
-        }
+        AUGraphConnectNodeInput(_augraph, _mixerNode, 0, _ioNode, 0);
         
+        int mixerCount = _isEnablePlayWhenRecord?2:1;
         // 为混音器配置输入
-        for (int i=0; i<2; i++) {
+        for (int i=0; i<mixerCount; i++) {
             AURenderCallbackStruct callback;
             callback.inputProc = mixerInputDataCallback;
             callback.inputProcRefCon = (__bridge void*)self;
@@ -395,7 +390,7 @@
         
         AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &_mixerStreamDesForOutput, sizeof(_mixerStreamDesForOutput));
         
-        if (_savePath != nil) {
+        if (self.dataWriteForNonPCM||self.dataWriteForPCM) {
             AURenderCallbackStruct callback;
             callback.inputProc = saveOutputCallback;
             callback.inputProcRefCon = (__bridge void*)self;
@@ -468,7 +463,10 @@ static OSStatus saveOutputCallback(void *inRefCon,
                 memcpy(buf+j*chs*bytesPerChannel+bytesPerChannel*i, buffer+j*bytesPerChannel, bytesPerChannel);
             }
         }
-        [player.dataWriter writeDataBytes:buf len:totalLen toPath:player.savePath];
+        if (player.dataWriteForPCM) {
+            [player.dataWriteForPCM writeDataBytes:buf len:totalLen];
+        }
+        
         
         // 释放资源
         free(buf);
@@ -476,7 +474,9 @@ static OSStatus saveOutputCallback(void *inRefCon,
     } else {
         AudioBuffer buffer = bufferList->mBuffers[0];
         UInt32 bufferLenght = bufferList->mBuffers[0].mDataByteSize;
-        [player.dataWriter writeDataBytes:buffer.mData len:bufferLenght toPath:player.savePath];
+        if (player.dataWriteForPCM) {
+            [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
+        }
     }
     
     return status;

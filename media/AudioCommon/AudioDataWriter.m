@@ -9,6 +9,38 @@
 #import "AudioDataWriter.h"
 
 @implementation AudioDataWriter
+- (id)initWithPath:(NSString*)path
+{
+    if (self = [super init]) {
+        self.savePath = path;
+    }
+    
+    return self;
+}
+- (void)deletePath
+{
+    if (self.savePath.length == 0) {
+        return;
+    }
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:self.savePath]){
+        [[NSFileManager defaultManager] removeItemAtPath:self.savePath error:nil];
+    }
+}
+- (void)writeDataBytes:(Byte*)dBytes len:(NSInteger)len
+{
+    NSData *data = [NSData dataWithBytes:dBytes length:len];
+    [self writeData:data];
+}
+- (void)writeData:(NSData*)data
+{
+    if (![[NSFileManager defaultManager] fileExistsAtPath:self.savePath]){
+        [[NSFileManager defaultManager] createFileAtPath:self.savePath contents:nil attributes:nil];
+    }
+    NSFileHandle * handle = [NSFileHandle fileHandleForWritingAtPath:self.savePath];
+    [handle seekToEndOfFile];
+    [handle writeData:data];
+}
 
 - (void)deletePath:(NSString*)path
 {

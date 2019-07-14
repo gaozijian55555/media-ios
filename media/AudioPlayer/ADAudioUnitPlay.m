@@ -48,6 +48,20 @@
     return self;
 }
 
+-(id)initWithAudioFilePath:(NSString*)path fileType:(ADAudioFileType)fileType
+{
+    if (self = [super init]) {
+        _audioPath = path;
+        // 从音频文件中读取数据解码后的音频数据格式;经过测试，发现只支持AudioFilePlayer解码后输出的数据格式只支持
+        // kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved;
+        AudioFormatFlags flags = kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved;
+        AudioStreamBasicDescription inputASDB = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:44100 channels:2 bytesPerChannel:4];
+        _readFile = [[ADExtAudioFile alloc] initWithReadPath:path adsb:inputASDB canrepeat:NO];
+    
+    }
+    return self;
+}
+
 - (void)addObservers
 {
     // 添加路由改变时的通知;比如用户插上了耳机，则remoteIO的element0对应的输出硬件由扬声器变为了耳机;策略就是 如果用户连上了蓝牙，则屏蔽手机内置的扬声器
@@ -286,7 +300,7 @@
 /** AudioBufferList详解
  *  struct AudioBufferList
  *  {
- *      UInt32      mNumberBuffers; // 填写channels个数
+ *      UInt32      mNumberBuffers;
  *      AudioBuffer mBuffers[1]; // 这里的定义等价于 AudioBuffer *mBuffers,所以它的元素个数是不固定的,元素个数由mNumberBuffers决定;
  *      对于packet数据,各个声道数据依次存储在mBuffers[0]中,对于planner格式,每个声道数据分别存储在mBuffers[0],...,mBuffers[i]中
  *      对于packet数据,AudioBuffer中mNumberChannels数目等于channels数目，对于planner则始终等于1
