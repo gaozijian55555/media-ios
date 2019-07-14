@@ -33,6 +33,8 @@
     
     // 用于播放封装格式的音频文件
     ADExtAudioFile  *_readFile;
+    
+    BOOL            _playNonPCM;
 }
 @property (strong, nonatomic) ADAudioSession *aSession;
 

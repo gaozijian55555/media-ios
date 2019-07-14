@@ -43,6 +43,7 @@ typedef enum : NSUInteger {
  *  NSInputStream和NSOutputStream等流式接口进行读写
  *  ADAudioFileTypeMP3和ADAudioFileTypeM4A 用于存储压缩的音频数据
  *  ADAudioFileTypeWAV和ADAudioFileTypeCAF 用于存储未压缩音频数据
+ *  IOS不支持MP3的编码？一直返回错误
  */
 typedef enum : NSUInteger {
     ADAudioFileTypeLPCM,

@@ -47,7 +47,6 @@
 {
     if (self = [super init]) {
     
-        self.dataWriteForPCM = [[AudioDataWriter alloc] initWithPath:savePath];
         _isPlanner = planner;
         _isEnablePlayWhenRecord = yesOrnot;
         _enableMixer = NO;
@@ -58,6 +57,14 @@
             catory = AVAudioSessionCategoryPlayAndRecord;
         }
         self.audioSession = [[ADAudioSession alloc] initWithCategary:catory channels:chs sampleRate:sampleRate bufferDuration:0.02 fortmatType:formatType saveType:type];
+        
+        if (fileType == ADAudioFileTypeLPCM) {
+            self.dataWriteForPCM = [[AudioDataWriter alloc] initWithPath:savePath];
+        } else {
+            // 压缩之前的裸音频数据格式
+            AudioStreamBasicDescription clientDataASBD = [ADUnitTool streamDesWithLinearPCMformat:self.audioSession.formatFlags sampleRate:sampleRate channels:chs bytesPerChannel:self.audioSession.bytesPerChannel];
+            self.dataWriteForNonPCM = [[ADExtAudioFile alloc] initWithWritePath:savePath adsb:clientDataASBD fileTypeId:fileType];
+        }
         
         // 来电，连上蓝牙，音箱等打断监听
         [self addInterruptListioner];
@@ -181,6 +188,12 @@
     status = AUGraphStop(_augraph);
     if (status != noErr) {
         NSLog(@"AUGraphStop fail %d",status);
+    }
+    
+    // 必须要有，否则生成的音频文件无法播放
+    if (self.dataWriteForNonPCM) {
+        [self.dataWriteForNonPCM closeFile];
+        self.dataWriteForNonPCM = nil;
     }
 }
 
@@ -447,58 +460,45 @@ static OSStatus saveOutputCallback(void *inRefCon,
         return noErr;
     }
     
-    /** 遇到问题：如果采集的存储格式为Planner类型，播放不正常
-     *  解决方案：ios采集的音频为小端字节序，采集格式为32位，只需要将bufferList中mBuffers对应的数据重新
-     *  组合成 左声道右声道....左声道右声道顺序的存储格式即可
-     */
-    if (isPlanner) {
-        // 则需要重新排序一下，将音频数据存储为packet 格式
-        int singleChanelLen = bufferList->mBuffers[0].mDataByteSize;
-        size_t totalLen = singleChanelLen * chs;
-        Byte *buf = (Byte *)malloc(singleChanelLen * chs);
-        bzero(buf, totalLen);
-        for (int j=0; j<singleChanelLen/bytesPerChannel;j++) {
-            for (int i=0; i<chs; i++) {
-                Byte *buffer = bufferList->mBuffers[i].mData;
-                memcpy(buf+j*chs*bytesPerChannel+bytesPerChannel*i, buffer+j*bytesPerChannel, bytesPerChannel);
+    if (player.dataWriteForPCM) {
+        /** 遇到问题：如果采集的存储格式为Planner类型，播放不正常
+         *  解决方案：ios采集的音频为小端字节序，采集格式为32位，只需要将bufferList中mBuffers对应的数据重新
+         *  组合成 左声道右声道....左声道右声道顺序的存储格式即可
+         */
+        if (isPlanner) {
+            // 则需要重新排序一下，将音频数据存储为packet 格式
+            int singleChanelLen = bufferList->mBuffers[0].mDataByteSize;
+            size_t totalLen = singleChanelLen * chs;
+            Byte *buf = (Byte *)malloc(singleChanelLen * chs);
+            bzero(buf, totalLen);
+            for (int j=0; j<singleChanelLen/bytesPerChannel;j++) {
+                for (int i=0; i<chs; i++) {
+                    Byte *buffer = bufferList->mBuffers[i].mData;
+                    memcpy(buf+j*chs*bytesPerChannel+bytesPerChannel*i, buffer+j*bytesPerChannel, bytesPerChannel);
+                }
+            }
+            if (player.dataWriteForPCM) {
+                [player.dataWriteForPCM writeDataBytes:buf len:totalLen];
+            }
+            
+            
+            // 释放资源
+            free(buf);
+            buf = NULL;
+        } else {
+            AudioBuffer buffer = bufferList->mBuffers[0];
+            UInt32 bufferLenght = bufferList->mBuffers[0].mDataByteSize;
+            if (player.dataWriteForPCM) {
+                [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
             }
         }
-        if (player.dataWriteForPCM) {
-            [player.dataWriteForPCM writeDataBytes:buf len:totalLen];
-        }
-        
-        
-        // 释放资源
-        free(buf);
-        buf = NULL;
-    } else {
-        AudioBuffer buffer = bufferList->mBuffers[0];
-        UInt32 bufferLenght = bufferList->mBuffers[0].mDataByteSize;
-        if (player.dataWriteForPCM) {
-            [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
-        }
+    } else if(player.dataWriteForNonPCM){    // 先压缩再保存
+        // 内部将实现压缩并且封装格式
+        [player.dataWriteForNonPCM writeFrames:inNumberFrames toBufferData:bufferList];
     }
+    
     
     return status;
-}
-
-static OSStatus playUnitInputCallback(void *inRefCon,
-                                      AudioUnitRenderActionFlags *ioActionFlags,
-                                      const AudioTimeStamp *inTimeStamp,
-                                      UInt32 inBusNumber,
-                                      UInt32 inNumberFrames,
-                                      AudioBufferList *ioData) {
-    
-    NSLog(@"playUnitInputCallback %d",*ioActionFlags);
-    
-    //使用flag判断数据渲染前后，是渲染后状态则有数据可取
-    if ((*ioActionFlags) & kAudioUnitRenderAction_PostRender){
-        AudioUnitRecorder *mixer = (__bridge AudioUnitRecorder *)inRefCon;
-        
-    }
-    
-    
-    return noErr;
 }
 
 static OSStatus mixerInputDataCallback(void *inRefCon,

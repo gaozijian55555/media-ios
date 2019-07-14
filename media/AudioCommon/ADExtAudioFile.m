@@ -21,51 +21,48 @@
 {
     if (self = [super init]) {
         _filePath = path;
-        _clientabsdForReader = outabsd;
         
-        [self setupExtAudioFileReader];
+        NSURL *fileUrl = [NSURL fileURLWithPath:_filePath];
+        // 打开指定的音频文件，并且创建一个ExtAudioFileRef对象，用于读取音频数据
+        OSStatus status = ExtAudioFileOpenURL((__bridge CFURLRef)fileUrl, &_audioFile);
+        if (status != noErr) {
+            NSLog(@"ExtAudioFileOpenURL faile %d",status);
+            return nil;
+        }
+        
+        /** 通过ExtAudioFileGetProperty()函数获取文件有关属性，比如编码格式，总共的音频frames数目等等；
+         *  这些步骤对于读取数据不是必须的，主要用于打印和分析
+         */
+        UInt32 size = sizeof(_fileDataabsdForReader);
+        status = ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_FileDataFormat, &size, &_fileDataabsdForReader);
+        if (status != noErr) {
+            NSLog(@"ExtAudioFileGetProperty kExtAudioFileProperty_FileDataFormat fail %d",status);
+            return nil;
+        }
+        size = sizeof(_packetSize);
+        ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_ClientMaxPacketSize, &size, &_packetSize);
+        NSLog(@"每次读取的packet的大小: %u",(unsigned int)_packetSize);
+        
+        // 备注：_totalFrames一定要是SInt64类型的，否则会出错。
+        size = sizeof(_totalFrames);
+        ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_FileLengthFrames, &size, &_totalFrames);
+        NSLog(@"文件中包含的frame数目: %lld",_totalFrames);
+        
+        // 对于从文件中读数据，app属于客户端。对于向文件中写入数据，app也属于客户端
+        // 设置从文件中读取数据后经过解码等步骤后最终输出的数据格式
+        _clientabsdForReader = [ADUnitTool streamDesWithLinearPCMformat:outabsd.mFormatFlags sampleRate:_fileDataabsdForReader.mSampleRate channels:_fileDataabsdForReader.mChannelsPerFrame bytesPerChannel:outabsd.mBitsPerChannel/8];
+        size = sizeof(_clientabsdForReader);
+        status = ExtAudioFileSetProperty(_audioFile, kExtAudioFileProperty_ClientDataFormat, size, &_clientabsdForReader);
+        if (status != noErr) {
+            NSLog(@"ExtAudioFileSetProperty kExtAudioFileProperty_ClientDataFormat fail %d",status);
+            return nil;
+        }
     }
     
     return self;
 }
 
-- (void)setupExtAudioFileReader
-{
-    NSURL *fileUrl = [NSURL fileURLWithPath:_filePath];
-    // 打开指定的音频文件，并且创建一个ExtAudioFileRef对象，用于读取音频数据
-    OSStatus status = ExtAudioFileOpenURL((__bridge CFURLRef)fileUrl, &_audioFile);
-    if (status != noErr) {
-        NSLog(@"ExtAudioFileOpenURL faile %d",status);
-        return;
-    }
-    
-    /** 通过ExtAudioFileGetProperty()函数获取文件有关属性，比如编码格式，总共的音频frames数目等等；
-     *  这些步骤对于读取数据不是必须的，主要用于打印和分析
-     */
-    UInt32 size = sizeof(_fileDataabsdForReader);
-    status = ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_FileDataFormat, &size, &_fileDataabsdForReader);
-    if (status != noErr) {
-        NSLog(@"ExtAudioFileGetProperty kExtAudioFileProperty_FileDataFormat fail %d",status);
-        return;
-    }
-    size = sizeof(_packetSize);
-    ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_ClientMaxPacketSize, &size, &_packetSize);
-    NSLog(@"每次读取的packet的大小: %u",(unsigned int)_packetSize);
-    
-    // 备注：_totalFrames一定要是SInt64类型的，否则会出错。
-    size = sizeof(_totalFrames);
-    ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_FileLengthFrames, &size, &_totalFrames);
-    NSLog(@"文件中包含的frame数目: %lld",_totalFrames);
-    
-    // 对于从文件中读数据，app属于客户端。对于向文件中写入数据，app也属于客户端
-    // 设置从文件中读取数据后经过解码等步骤后最终输出的数据格式
-    size = sizeof(_clientabsdForReader);
-    status = ExtAudioFileGetProperty(_audioFile, kExtAudioFileProperty_ClientDataFormat, &size, &_clientabsdForReader);
-    if (status != noErr) {
-        NSLog(@"ExtAudioFileSetProperty kExtAudioFileProperty_ClientDataFormat fail %d",status);
-        return;
-    }
-}
+
 // 从文件中读取音频数据
 - (OSStatus)readFrames:(UInt32*)framesNum toBufferData:(AudioBufferList*)bufferlist
 {
@@ -88,7 +85,7 @@
 
 
 // 用于写文件
-- (id)initWithWritePath:(NSString*)path adsb:(AudioStreamBasicDescription)clientabsd fileTypeId:(AudioFileTypeID)typeId
+- (id)initWithWritePath:(NSString*)path adsb:(AudioStreamBasicDescription)clientabsd fileTypeId:(ADAudioFileType)typeId
 {
     if (self = [super init]) {
         if (path.length == 0 || clientabsd.mBitsPerChannel == 0 || typeId == 0) {
@@ -97,7 +94,7 @@
         
         _filePath = [path stringByDeletingPathExtension];
         _clientabsdForWriter = clientabsd;
-        _fileTypeId = typeId;
+        _fileTypeId = [ADExtAudioFile convertFromType:typeId];
         
         if ([self setupExtAudioFile] != noErr) {
             [self closeFile];
@@ -111,7 +108,7 @@
     NSAssert([self isSurportedFileType:_fileTypeId], @"此格式还不支持");
     NSString *fileExtension = [self fileExtensionForTypeId:_fileTypeId];
     if (fileExtension == nil) {
-        NSLog(@"不支持此格式");
+        NSLog(@"不支持此格式 %@",fileExtension);
         return -1;
     }
     
@@ -134,7 +131,8 @@
         fileDataDesc.mBytesPerPacket = 0;// 这些填0就好，内部编码算法会自己计算
         fileDataDesc.mBitsPerChannel = 0;// 这些填0就好，内部编码算法会自己计算
         fileDataDesc.mReserved = 0;
-    } else if(_fileTypeId == kAudioFileMP3Type) {  // 保存为mp3格式音频文件
+    }   // IOS 不支持MP3的编码，尴尬
+    else if(_fileTypeId == kAudioFileMP3Type) {  // 保存为mp3格式音频文件,ios不支持
         fileDataDesc.mFormatID = kAudioFormatMPEGLayer3;        // mp3的编码方式为mp3编码
         fileDataDesc.mFormatFlags = 0;    // 对于mp3来说 no flags
         fileDataDesc.mChannelsPerFrame = _clientabsdForWriter.mChannelsPerFrame;  // 声道数和输入的PCM一致
@@ -144,7 +142,8 @@
         fileDataDesc.mBytesPerPacket = 0;// 这些填0就好，内部编码算法会自己计算
         fileDataDesc.mBitsPerChannel = 0;// 这些填0就好，内部编码算法会自己计算
         fileDataDesc.mReserved = 0;
-    } else if (_fileTypeId == kAudioFileCAFType || _fileTypeId == kAudioFileWAVEType) { // 保存为caf或者wav格式文件，不编码
+    }
+    else if (_fileTypeId == kAudioFileCAFType || _fileTypeId == kAudioFileWAVEType) { // 保存为caf或者wav格式文件，不编码
         // 如果不做压缩，则原封不动的保存到音频文件中
         fileDataDesc.mFormatID = kAudioFormatLinearPCM;
         fileDataDesc.mFormatFlags = _clientabsdForWriter.mFormatFlags;
@@ -215,6 +214,10 @@
 
 - (AudioStreamBasicDescription)clientABSD
 {
+    if (_clientabsdForReader.mBitsPerChannel != 0) {
+        return _clientabsdForReader;
+    }
+    
     return _clientabsdForWriter;
 }
 
@@ -265,6 +268,25 @@
 - (NSArray*)surportedFileTypes
 {
     return @[@(kAudioFileM4AType),@(kAudioFileWAVEType),@(kAudioFileCAFType),@(kAudioFileMP3Type)];
+}
+
++ (AudioFileTypeID)convertFromType:(ADAudioFileType)type
+{
+    NSAssert(type != ADAudioFileTypeLPCM, @"无法处理 PCM数据");
+    AudioFileTypeID resultType = kAudioFileM4AType;
+    if (type == ADAudioFileTypeM4A) {
+        resultType = kAudioFileM4AType;
+    } else if (type == ADAudioFileTypeMP3) {
+        resultType = kAudioFileMP3Type;
+    } else if (type == ADAudioFileTypeCAF) {
+        resultType = kAudioFileCAFType;
+    } else if (type == ADAudioFileTypeWAV) {
+        resultType = kAudioFileWAVEType;
+    } else {
+        resultType = kAudioFileWAVEType;
+    }
+    
+    return resultType;
 }
 
 - (void)checkWriterStatus

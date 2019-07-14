@@ -33,7 +33,7 @@
 
 /** 用于读文件
  *  path:要读取文件的路径
- *  clientabsd:从文件中读取数据后的输出给app的音频数据格式
+ *  clientabsd:从文件中读取数据后的输出给app的音频数据格式，函数内部会使用实际的采样率和声道数，这里只需要指定采样格式和存储方式(planner还是packet)
  *  repeat:当到达文件的末尾后，是否重新开始读取
  */
 - (id)initWithReadPath:(NSString*)path adsb:(AudioStreamBasicDescription)clientabsd canrepeat:(BOOL)repeat;
@@ -46,10 +46,14 @@
  *  typeId:指定封装格式(每一个封装格式对应特定的一种或几种编码方式)
  *  async:是否异步写入数据，默认同步写入
  */
-- (id)initWithWritePath:(NSString*)path adsb:(AudioStreamBasicDescription)clientabsd fileTypeId:(AudioFileTypeID)typeId;
+- (id)initWithWritePath:(NSString*)path adsb:(AudioStreamBasicDescription)clientabsd fileTypeId:(ADAudioFileType)typeId;
 - (OSStatus)writeFrames:(UInt32)framesNum toBufferData:(AudioBufferList*)bufferlist;
 - (OSStatus)writeFrames:(UInt32)framesNum toBufferData:(AudioBufferList*)bufferlist async:(BOOL)async;
+
 - (AudioStreamBasicDescription)clientABSD;
 
 - (void)closeFile;
+
+
++ (AudioFileTypeID)convertFromType:(ADAudioFileType)type;
 @end

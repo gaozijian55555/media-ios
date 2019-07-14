@@ -28,6 +28,7 @@
 {
     if (self = [super init]) {
         _audioPath = path;
+        _playNonPCM = NO;
         
         // 1、配置音频会话 AVAudioSession，播放和录制音频都需要该会话
         self.aSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:chs sampleRate:rate bufferDuration:0.02 fortmatType:formatType saveType:ADAudioSaveTypePacket];
@@ -52,11 +53,28 @@
 {
     if (self = [super init]) {
         _audioPath = path;
+        _playNonPCM = YES;
+        
         // 从音频文件中读取数据解码后的音频数据格式;经过测试，发现只支持AudioFilePlayer解码后输出的数据格式只支持
         // kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved;
         AudioFormatFlags flags = kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved;
         AudioStreamBasicDescription inputASDB = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:44100 channels:2 bytesPerChannel:4];
         _readFile = [[ADExtAudioFile alloc] initWithReadPath:path adsb:inputASDB canrepeat:NO];
+        
+        AudioStreamBasicDescription clientASBD = _readFile.clientABSD;
+        // todo:zsz 位置1
+        self.aSession = [[ADAudioSession alloc] initWithCategary:AVAudioSessionCategoryPlayback channels:clientASBD.mChannelsPerFrame sampleRate:clientASBD.mSampleRate bufferDuration:0.02 fortmatType:ADAudioFormatType32Float saveType:ADAudioSaveTypePlanner];
+        
+        [self addObservers];
+        
+        [self createAudioComponentDesctription];
+        
+        [self createAudioUnitByAugraph];
+        
+        [self setAudioUnitProperties];
+        
+        
+        
     
     }
     return self;
@@ -166,7 +184,7 @@
     CGFloat rate = self.aSession.currentSampleRate;
     NSInteger chs = self.aSession.currentChannels;
     //输入给扬声器的音频数据格式
-    /** 遇到问题：AUGraphInitialize fail
+    /** 遇到问题：AUGraphInitialize fail -10868
      *  解决方案：创建AudioStreamBasicDescription对象时，mFormatFlags对应的数据格式一定要与mBitsPerChannel一致
      */
     AudioStreamBasicDescription odes = [ADUnitTool streamDesWithLinearPCMformat:kAudioFormatFlagIsFloat|kAudioFormatFlagIsNonInterleaved sampleRate:rate channels:chs bytesPerChannel:4];
@@ -174,6 +192,7 @@
     // PCM文件的音频的数据格式
     AudioFormatFlags flags = self.aSession.formatFlags;
     NSInteger _bytesPerChannel = self.aSession.bytesPerChannel;
+    // todo:zsz 位置2
     AudioStreamBasicDescription cvtInDes = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs bytesPerChannel:_bytesPerChannel];
     
     // 设置扬声器的输入音频数据格式
@@ -243,6 +262,11 @@
     if (inputSteam) {
         [inputSteam close];
         inputSteam = nil;
+    }
+    
+    if (_readFile) {
+        [_readFile closeFile];
+        _readFile = nil;
     }
 }
 
@@ -317,14 +341,25 @@ static OSStatus InputRenderCallback(void *inRefCon,
                                     AudioBufferList *ioData)
 {
     ADAudioUnitPlay *player = (__bridge id)inRefCon;
-    NSInteger result= (UInt32)[player->inputSteam read:ioData->mBuffers[0].mData maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
-    NSLog(@"d1 %p size %ld",ioData->mBuffers[0].mData,result);
-    if (result <=0) {
-        [player stop];
-        return kCGErrorNoneAvailable;
+    if (player->inputSteam && !player->_playNonPCM) {
+        OSStatus result= (OSStatus)[player->inputSteam read:ioData->mBuffers[0].mData maxLength:(NSInteger)ioData->mBuffers[0].mDataByteSize];
+        NSLog(@"d1 %p size %d",ioData->mBuffers[0].mData,result);
+        if (result <0) {
+            [player stop];
+            return kCGErrorNoneAvailable;
+        }
+        ioData->mBuffers[0].mDataByteSize = (UInt32)result;
+    } else if(player->_readFile) {
+        /** 遇到问题：返回 -50 错误1111: EXCEPTION (-50): "wrong number of buffers"
+         *  分析原因：因为前面// todo:zsz 位置1的存储格式之前给的packet，而// todo:zsz 位置2输入的音频格式给的是planner，两边不一致
+         *  解决方案：两边保持一直即可
+         */
+        OSStatus result= (OSStatus)[player->_readFile readFrames:&inNumberFrames toBufferData:ioData];
+        if (result <0 || inNumberFrames == 0) {
+            [player stop];
+            return kCGErrorNoneAvailable;
+        }
     }
-    ioData->mBuffers[0].mDataByteSize = (UInt32)result;
-    //        NSLog(@"数据 %@",[NSData dataWithBytes:ioData->mBuffers[0].mData length:(NSInteger)ioData->mBuffers[iBuffer].mDataByteSize]);
     
     return noErr;
 }
