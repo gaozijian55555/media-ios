@@ -38,6 +38,7 @@
 }
 @property (strong, nonatomic) NSString *source1;
 @property (strong, nonatomic) NSString *source2;
+@property (copy, nonatomic) void (^completeBlock)(void);
 
 - (id)initWithPath1:(NSString*)path1 volume:(float)vol1 path2:(NSString*)path2 volume:(float)vol2;
 - (void)setupFormat:(ADAudioFormatType)format

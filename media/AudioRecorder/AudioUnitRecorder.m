@@ -52,18 +52,17 @@
         _enableMixer = NO;
         
         ADAudioSaveType type = _isPlanner?ADAudioSaveTypePlanner:ADAudioSaveTypePacket;
-        AVAudioSessionCategory catory = AVAudioSessionCategoryRecord;
-        if (yesOrnot) {
-            catory = AVAudioSessionCategoryPlayAndRecord;
-        }
+        AVAudioSessionCategory catory = AVAudioSessionCategoryPlayAndRecord;
         self.audioSession = [[ADAudioSession alloc] initWithCategary:catory channels:chs sampleRate:sampleRate bufferDuration:0.02 fortmatType:formatType saveType:type];
         
-        if (fileType == ADAudioFileTypeLPCM) {
-            self.dataWriteForPCM = [[AudioDataWriter alloc] initWithPath:savePath];
-        } else {
-            // 压缩之前的裸音频数据格式
-            AudioStreamBasicDescription clientDataASBD = [ADUnitTool streamDesWithLinearPCMformat:self.audioSession.formatFlags sampleRate:sampleRate channels:chs bytesPerChannel:self.audioSession.bytesPerChannel];
-            self.dataWriteForNonPCM = [[ADExtAudioFile alloc] initWithWritePath:savePath adsb:clientDataASBD fileTypeId:fileType];
+        if (savePath) {
+            if (fileType == ADAudioFileTypeLPCM) {
+                self.dataWriteForPCM = [[AudioDataWriter alloc] initWithPath:savePath];
+            } else {
+                // 压缩之前的裸音频数据格式
+                AudioStreamBasicDescription clientDataASBD = [ADUnitTool streamDesWithLinearPCMformat:self.audioSession.formatFlags sampleRate:sampleRate channels:chs bytesPerChannel:self.audioSession.bytesPerChannel];
+                self.dataWriteForNonPCM = [[ADExtAudioFile alloc] initWithWritePath:savePath adsb:clientDataASBD fileTypeId:fileType];
+            }
         }
         
         // 来电，连上蓝牙，音箱等打断监听
@@ -150,18 +149,19 @@
      *  对于_mixerUnit，它的kAudioUnitScope_OutScope是一个和_clientFormat32float固定格式的ABSD，不需要
      *  额外设置
      */
-    CGFloat samplerate=  self.audioSession.currentSampleRate;
-    UInt32 bytesPerSample = (UInt32)self.audioSession.bytesPerChannel;
-    _mixerStreamDesForInput.mFormatID          = kAudioFormatLinearPCM;
-    _mixerStreamDesForInput.mFormatFlags       = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
-    _mixerStreamDesForInput.mBytesPerPacket    = bytesPerSample;
-    _mixerStreamDesForInput.mFramesPerPacket   = 1;
-    _mixerStreamDesForInput.mBytesPerFrame     = bytesPerSample;
-    _mixerStreamDesForInput.mChannelsPerFrame  = 2;
-    _mixerStreamDesForInput.mBitsPerChannel    = 8 * bytesPerSample;
-    _mixerStreamDesForInput.mSampleRate        = samplerate;
+    UInt32 bytesPerSample = 4;  // 要与下面mFormatFlags 对应
+    AudioStreamBasicDescription absd;
+    absd.mFormatID          = kAudioFormatLinearPCM;
+    absd.mFormatFlags       = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+    absd.mBytesPerPacket    = bytesPerSample;
+    absd.mFramesPerPacket   = 1;
+    absd.mBytesPerFrame     = 4;
+    absd.mChannelsPerFrame  = 2;
+    absd.mBitsPerChannel    = 8 * bytesPerSample;
+    absd.mSampleRate        = 0;
     
-    self.dataReader = [[ADExtAudioFile alloc] initWithReadPath:path adsb:_mixerStreamDesForInput canrepeat:YES];
+    self.dataReader = [[ADExtAudioFile alloc] initWithReadPath:path adsb:absd canrepeat:NO];
+    _mixerStreamDesForInput = self.dataReader.clientABSD;
 }
 
 - (void)startRecord
@@ -228,7 +228,7 @@
 - (void)createAudioUnitComponentDescription
 {
     // 创建RemoteIO
-    _iodes = [ADUnitTool comDesWithType:kAudioUnitType_Output subType:kAudioUnitSubType_RemoteIO fucture:kAudioUnitManufacturer_Apple];
+    _iodes = [ADUnitTool comDesWithType:kAudioUnitType_Output subType:kAudioUnitSubType_VoiceProcessingIO fucture:kAudioUnitManufacturer_Apple];
     // 创建格式转换器；使用混音功能的时候才用到
     _convertdes = [ADUnitTool comDesWithType:kAudioUnitType_FormatConverter subType:kAudioUnitSubType_AUConverter fucture:kAudioUnitManufacturer_Apple];
     // 创建混音器；使用混音功能的时候才用到
@@ -327,7 +327,7 @@
          *  备注：混音器可以有多个输入，但是只有一个输出，AudioUnitElement值为0
          */
         UInt32 mixerInputcount = _isEnablePlayWhenRecord?2:1;
-        AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_ElementCount, kAudioUnitScope_Input, 0, &mixerInputcount, sizeof(mixerInputcount));
+        CheckStatusReturn(AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_ElementCount, kAudioUnitScope_Input, 0, &mixerInputcount, sizeof(mixerInputcount)),@"kAudioUnitProperty_ElementCount");
         
         // 指定混音器的采样率
         status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_SampleRate, kAudioUnitScope_Output, 0, &rate, sizeof(rate));
@@ -401,13 +401,20 @@
             }
         }
         
-        AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &_mixerStreamDesForOutput, sizeof(_mixerStreamDesForOutput));
+        if (_isEnablePlayWhenRecord) {
+            AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &_mixerStreamDesForInput, sizeof(_mixerStreamDesForInput));
+            /** 遇到问题：混音器的输出格式 无法设置？一直返回-108868，但是也不影响结果。
+             *  分析原因：想一下也正确，因为混音器的输出格式肯定和输入格式一样
+             *  解决方案：去掉混音器输出格式设置，对结果不影响
+             */
+//            status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &_mixerStreamDesForOutput, sizeof(_mixerStreamDesForOutput));
+        }
         
-        if (self.dataWriteForNonPCM||self.dataWriteForPCM) {
+        if ((self.dataWriteForNonPCM||self.dataWriteForPCM)) {
             AURenderCallbackStruct callback;
             callback.inputProc = saveOutputCallback;
             callback.inputProcRefCon = (__bridge void*)self;
-            status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &callback, sizeof(callback));
+            status = AudioUnitSetProperty(_ioUnit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Output, 1, &callback, sizeof(callback));
             if (status != noErr) {
                 NSLog(@"AudioUnitSetProperty kAudioOutputUnitProperty_SetInputCallback %d",status);
             }
@@ -446,12 +453,7 @@ static OSStatus saveOutputCallback(void *inRefCon,
     OSStatus status = noErr;
     // 该函数的作用就是将麦克风采集的音频数据根据前面配置的RemoteIO输出数据格式渲染出来，然后放到
     // bufferList缓冲中；那么这里将是PCM格式的原始音频帧
-    if (player->_enableMixer) {
-        status = AudioUnitRender(player->_mixerUnit, ioActionFlags, inTimeStamp, 0, inNumberFrames, ioData);
-        bufferList = ioData;
-    } else {
-        status = AudioUnitRender(player->_ioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, bufferList);
-    }
+    status = AudioUnitRender(player->_ioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, bufferList);
     
     if (status != noErr) {
         NSLog(@"AudioUnitRender fail %d",status);
@@ -492,7 +494,7 @@ static OSStatus saveOutputCallback(void *inRefCon,
                 [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
             }
         }
-    } else if(player.dataWriteForNonPCM){    // 先压缩再保存
+    } else if(player.dataWriteForNonPCM){
         // 内部将实现压缩并且封装格式
         [player.dataWriteForNonPCM writeFrames:inNumberFrames toBufferData:bufferList];
     }
@@ -510,14 +512,19 @@ static OSStatus mixerInputDataCallback(void *inRefCon,
 {
     AudioUnitRecorder *recorder = ((__bridge AudioUnitRecorder*)inRefCon);
     NSLog(@"输出 时间 %.2f 序号 %d frames %d",inTimeStamp->mSampleTime,inBusNumber,inNumberFrames);
-    if (inBusNumber == 0) {     // 代表录音
-        // 将录音的数据填充进来
-        AudioUnitRender(recorder->_ioUnit, ioActionFlags, inTimeStamp, 1, inNumberFrames, ioData);
-    } else if (inBusNumber == 1){   // 代表音频文件
-        // 从音频文件中读取数据并填充进来
-        [recorder->_dataReader readFrames:&inNumberFrames toBufferData:ioData];
+    OSStatus status = noErr;
+    if (recorder->_isEnablePlayWhenRecord) {    // 开启了耳返
+        if (inBusNumber == 0) {     // 代表录音
+            // 将录音的数据填充进来
+            status = AudioUnitRender(recorder->_ioUnit, ioActionFlags, inTimeStamp, 1, inNumberFrames, ioData);
+        } else if (inBusNumber == 1){   // 代表音频文件
+            // 从音频文件中读取数据并填充进来
+            status = [recorder->_dataReader readFrames:&inNumberFrames toBufferData:ioData];
+        }
+    } else {
+        status = [recorder->_dataReader readFrames:&inNumberFrames toBufferData:ioData];
     }
-    return noErr;
+    return status;
 }
 
 #pragma mark 播放声音过程中收到了路由改变通知处理

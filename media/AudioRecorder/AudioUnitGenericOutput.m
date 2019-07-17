@@ -47,18 +47,7 @@
     }
     clientABSD = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:samplerate channels:channels bytesPerChannel:bytesPerChannel];
     
-    AudioFileTypeID typeId = kAudioFileCAFType;
-    if (type == ADAudioFileTypeCAF) {
-        typeId = kAudioFileCAFType;
-    } else if(type == ADAudioFileTypeWAV){
-        typeId = kAudioFileWAVEType;
-    } else if(type == ADAudioFileTypeMP3){
-        typeId = kAudioFileMP3Type;
-    } else if(type == ADAudioFileTypeM4A){
-        typeId = kAudioFileM4AType;
-    }
-    _extFileWriter = [[ADExtAudioFile alloc] initWithWritePath:savePath adsb:clientABSD fileTypeId:typeId];
-    
+    _extFileWriter = [[ADExtAudioFile alloc] initWithWritePath:savePath adsb:clientABSD fileTypeId:type];
     
     [self setupAUGraph];
     [self setupSource:_source1 sourceFileID:_source1FileID player:_source1Unit];
@@ -142,13 +131,17 @@
     CheckStatusReturn(AudioUnitSetParameter(_mixerUnit,kMultiChannelMixerParam_Volume, kAudioUnitScope_Input, 0, _volume[0], 0), @"AudioUnitSetProperty inputASDB");
     CheckStatusReturn(AudioUnitSetParameter(_mixerUnit,kMultiChannelMixerParam_Volume, kAudioUnitScope_Input, 1, _volume[1], 0), @"AudioUnitSetProperty inputASDB");
     
-    // 音频文件经过混音器混合后输出的数据格式
-    AudioStreamBasicDescription mixerASBD = _extFileWriter.clientABSD;
-    CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &mixerASBD, sizeof(mixerASBD)), @"AudioUnitSetProperty outputASBD");
+    /** 遇到问题：混音器的输出格式 无法设置？一直返回-108868，但是也不影响结果。
+     *  分析原因：想一下也正确，因为混音器的输出格式肯定和输入格式一样
+     *  解决方案：去掉混音器输出格式设置，对结果不影响
+     */
+
+//    CheckStatusReturn(AudioUnitSetProperty(_mixerUnit,kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &mixerASBD, sizeof(mixerASBD)), @"AudioUnitSetProperty outputASBD");
     
     // 设置generic output 输入输出数据格式
-    AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &mixerASBD, sizeof(inputASDB));
-    AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &mixerASBD, sizeof(inputASDB));
+    AudioStreamBasicDescription mixerASBD = _extFileWriter.clientABSD;
+    CheckStatusReturn(AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &mixerASBD, sizeof(mixerASBD)),@"AudioUnitSetProperty outputASBD1");
+    CheckStatusReturn(AudioUnitSetProperty(_genericUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &mixerASBD, sizeof(mixerASBD)),@"AudioUnitSetProperty outputASBD2");
     
     // 将文件1和文件2的音频 输入mixer进行混音处理
     CheckStatusReturn(AUGraphConnectNodeInput(_auGraph, _source1Node, 0, _mixerNode, 0), @"AUGraphConnectNodeInput 1");
@@ -204,7 +197,8 @@
     }
     
     /** 遇到问题：返回-10867
-     *  解决思路：设置kAudioUnitProperty_ScheduledFileRegion前要先调用AUGraphInitialize(_auGraph);初始化AUGraph
+     *  解决思路：设置kAudioUnitProperty_ScheduledFileRegion前要先调用AUGraphInitialize
+     *  (_auGraph);初始化AUGraph
      */
     CheckStatusReturn(AudioUnitSetProperty(sourceplayer, kAudioUnitProperty_ScheduledFileRegion,
                                     kAudioUnitScope_Global, 0,&rgn, sizeof(rgn)),
@@ -362,6 +356,9 @@
      */
     [_extFileWriter closeFile];
     NSLog(@"渲染线程结束");
+    if (self.completeBlock) {
+        self.completeBlock();
+    }
 }
 
 static OSStatus mixerInputDataCallback(void *inRefCon,

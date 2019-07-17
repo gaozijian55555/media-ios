@@ -17,6 +17,7 @@
     BOOL isRecording;
     BOOL isPlaying;
     NSString *_audioPath;
+    NSString *_audioPath2;
     
     ADAudioFormatType   _formatType;
     ADAudioFileType     _saveFileType;
@@ -71,9 +72,10 @@
     EBDropdownListItem *item1 = [[EBDropdownListItem alloc] initWithItem:@"1" itemName:@"录制+存储为PCM"];
     EBDropdownListItem *item2 = [[EBDropdownListItem alloc] initWithItem:@"2" itemName:@"录制+耳返存储为PCM"];
     EBDropdownListItem *item3 = [[EBDropdownListItem alloc] initWithItem:@"3" itemName:@"录制+存储为M4A/CAF/WAV"];
-    EBDropdownListItem *item4 = [[EBDropdownListItem alloc] initWithItem:@"4" itemName:@"离线混合音频文件"];
-    EBDropdownListItem *item5 = [[EBDropdownListItem alloc] initWithItem:@"5" itemName:@"录制+添加背景音乐"];
-    _dropdownListView = [[EBDropdownListView alloc] initWithDataSource:@[item1, item2,item3,item4,item5]];
+    EBDropdownListItem *item4 = [[EBDropdownListItem alloc] initWithItem:@"4" itemName:@"录制+耳返并播放背景音乐"];
+    EBDropdownListItem *item5 = [[EBDropdownListItem alloc] initWithItem:@"5" itemName:@"离线混合音频文件"];
+    EBDropdownListItem *item6 = [[EBDropdownListItem alloc] initWithItem:@"6" itemName:@"录制+添加背景音乐"];
+    _dropdownListView = [[EBDropdownListView alloc] initWithDataSource:@[item1, item2,item3,item4,item5,item6]];
     _dropdownListView.selectedIndex = 0;
     _dropdownListView.frame = CGRectMake(20, 100, 330, 30);
     [_dropdownListView setViewBorder:0.5 borderColor:[UIColor grayColor] cornerRadius:2];
@@ -114,11 +116,39 @@
         isRecording = NO;
         [self stopRecord];
         [self stopPlay];
+        
+        NSInteger _selectIndex = _dropdownListView.selectedIndex;
+        if (_selectIndex == 5) {        // 还添加背景音乐
+            if (self.audioGenericOutput) {
+                [self.audioGenericOutput stop];
+                self.audioGenericOutput = nil;
+            }
+
+            NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+            _audioPath2 = [path stringByAppendingPathComponent:@"test_back_mixer.m4a"];
+            self.audioUnitRecorder = nil;
+
+            _saveFileType = ADAudioFileTypeM4A;
+
+            // 由于AudioFilePlayer无法读取PCM裸数据文件，所以这里用MP3
+            NSString *file1 = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"mp3"];
+            self.audioGenericOutput = [[AudioUnitGenericOutput alloc] initWithPath1:file1 volume:0.1 path2:_audioPath volume:0.9];
+            [self.audioGenericOutput setupFormat:ADAudioFormatType16Int audioSaveType:ADAudioSaveTypePlanner sampleRate:44100 channels:2 savePath:_audioPath2 saveFileType:_saveFileType];
+            NSTimeInterval timeBegin = [NSDate timeIntervalSinceReferenceDate];
+            NSLog(@"开始渲染 .....");
+            __weak typeof(self)weakSelf = self;
+            self.audioGenericOutput.completeBlock = ^{
+                NSLog(@"渲染结束 耗时 %.2f ",[NSDate timeIntervalSinceReferenceDate] - timeBegin);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [weakSelf stopPlay];
+                    [weakSelf stopRecord];
+                });
+            };
+            [self.audioGenericOutput start];
+        }
     } else {
         isRecording = YES;
         isPlaying = NO;
-//        NSString *audioFile = @"test-mp3-1";
-//        NSString *audioFile = @"background";
         if (self.audioUnitRecorder != nil) {
             [self.audioUnitRecorder stopRecord];
             self.audioUnitRecorder = nil;
@@ -165,24 +195,55 @@
             
             [self.audioUnitRecorder startRecord];
         }
-//        else if(_selectIndex == 3){
-//            // 由于AudioFilePlayer无法读取PCM裸数据文件，所以这里用MP3
-//            NSString *file1 = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"mp3"];
-//            NSString *file2 = [[NSBundle mainBundle] pathForResource:@"test-mp3-1" ofType:@"mp3"];
-//            self.audioGenericOutput = [[AudioUnitGenericOutput alloc] initWithPath1:file1 volume:0.1 path2:file2 volume:0.9];
-//            [self.audioGenericOutput setupFormat:ADAudioFormatType16Int audioSaveType:ADAudioSaveTypePacket sampleRate:44100 channels:2 savePath:_audioPath saveFileType:ADAudioFileTypeM4A];
-//            [self.audioGenericOutput start];
-//        }
-        //            else if(_selectIndex == 3){
-        //                NSString *mixerPath = [[NSBundle mainBundle] pathForResource:audioFile ofType:@"mp3"];
-        //                self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatType:_flags planner:_planner channels:_channels samplerate:_sampleRate Path:_audioPath recordAndPlay:NO mixerPath:mixerPath];
-        //                [self.audioUnitRecorder startRecord];
-        //            }
-        //            else if(_selectIndex == 4){
-        //                NSString *mixerPath = [[NSBundle mainBundle] pathForResource:audioFile ofType:@"mp3"];
-        //                self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatType:_flags planner:_planner channels:_channels samplerate:_sampleRate Path:_audioPath recordAndPlay:YES mixerPath:mixerPath];
-        //                [self.audioUnitRecorder startRecord];
-        //            }
+        else if(_selectIndex == 3){
+            // 录制 播放背景音乐 并且有耳返效果;path 为nil 则不保存录制的音频
+            _recordAndPlay = YES;
+            NSString *file = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"mp3"];
+            self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatType:_formatType planner:_planner channels:_channels samplerate:_sampleRate Path:nil backgroundMusicPath:file recordAndPlay:YES saveFileType:_saveFileType];
+            
+            [self.audioUnitRecorder startRecord];
+        }
+        else if(_selectIndex == 4){
+            if (self.audioGenericOutput) {
+                [self.audioGenericOutput stop];
+                self.audioGenericOutput = nil;
+            }
+            
+            _audioPath = [path stringByAppendingPathComponent:@"test-mixer.m4a"];
+            NSLog(@"文件目录 ==>%@",_audioPath);
+            
+            _saveFileType = ADAudioFileTypeM4A;
+            _recordAndPlay = NO;
+            
+            // 由于AudioFilePlayer无法读取PCM裸数据文件，所以这里用MP3
+            NSString *file1 = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"mp3"];
+            NSString *file2 = [[NSBundle mainBundle] pathForResource:@"test-mp3-1" ofType:@"mp3"];
+            self.audioGenericOutput = [[AudioUnitGenericOutput alloc] initWithPath1:file1 volume:0.1 path2:file2 volume:0.9];
+            [self.audioGenericOutput setupFormat:ADAudioFormatType16Int audioSaveType:ADAudioSaveTypePlanner sampleRate:44100 channels:2 savePath:_audioPath saveFileType:_saveFileType];
+            NSTimeInterval timeBegin = [NSDate timeIntervalSinceReferenceDate];
+            NSLog(@"开始渲染 .....");
+            __weak typeof(self)weakSelf = self;
+            self.audioGenericOutput.completeBlock = ^{
+                NSLog(@"渲染结束 耗时 %.2f ",[NSDate timeIntervalSinceReferenceDate] - timeBegin);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [weakSelf stopPlay];
+                    [weakSelf stopRecord];
+                });
+            };
+            [self.audioGenericOutput start];
+        }
+        else if(_selectIndex == 5){
+            _audioPath = [path stringByAppendingPathComponent:@"test.m4a"];
+            NSLog(@"文件目录 ==>%@",_audioPath);
+            
+            _saveFileType = ADAudioFileTypeM4A;
+            _recordAndPlay = NO;
+            
+            NSString *file = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"mp3"];
+            self.audioUnitRecorder = [[AudioUnitRecorder alloc] initWithFormatType:_formatType planner:_planner channels:_channels samplerate:_sampleRate Path:_audioPath backgroundMusicPath:file recordAndPlay:_recordAndPlay saveFileType:_saveFileType];
+            
+            [self.audioUnitRecorder startRecord];
+        }
         
         [self.recordBtn setTitle:@"停止" forState:UIControlStateNormal];
     }
@@ -205,7 +266,12 @@
         if (_saveFileType == ADAudioFileTypeLPCM) {
             self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithChannels:_channels sampleRate:_sampleRate formatType:_formatType planner:_planner path:_audioPath];
         } else {
-            self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithAudioFilePath:_audioPath fileType:_saveFileType];
+            NSInteger _selectIndex = _dropdownListView.selectedIndex;
+            if (_selectIndex == 5) {        // 还添加背景音乐
+                self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithAudioFilePath:_audioPath2 fileType:_saveFileType];
+            } else {
+                self.audioUnitPlay = [[ADAudioUnitPlay alloc] initWithAudioFilePath:_audioPath fileType:_saveFileType];
+            }
         }
         
         [self.audioUnitPlay play];
