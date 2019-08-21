@@ -53,6 +53,11 @@ typedef enum : NSUInteger {
     ADAudioFileTypeCAF
 }ADAudioFileType;
 
+typedef enum : NSUInteger {
+    ADAudioEncodeTypeAAC,
+    ADAudioEncodeTypeMP3,
+}ADAudioEncodeType;
+
 
 struct _AudioFormat {
     ADAudioFormatType formatType;

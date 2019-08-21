@@ -10,6 +10,9 @@
 #import "Activities/AudioPlayerViewController.h"
 #import "Activities/VideoPlayerViewController.h"
 #import "Activities/AudioRecorderViewController.h"
+#import "AudioEnDecodeViewController.h"
+#import "VideoEnDecodeViewController.h"
+#import "FFmpegEnDecodeViewController.h"
 
 @interface ViewController ()
 
@@ -47,7 +50,16 @@
 }
 
 - (IBAction)videoRecord:(id)sender {
-    AudioPlayerViewController *vc = [[AudioPlayerViewController alloc] init];
+    VideoEnDecodeViewController *vc = [[VideoEnDecodeViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (IBAction)encodeAndDecode:(id)sender {
+    AudioEnDecodeViewController *vc = [[AudioEnDecodeViewController alloc] init];
+    [self presentViewController:vc animated:YES completion:nil];
+}
+- (IBAction)ffmpegEnDecode:(id)sender {
+    FFmpegEnDecodeViewController *vc = [[FFmpegEnDecodeViewController alloc] init];
     [self presentViewController:vc animated:YES completion:nil];
 }
 @end

@@ -11,6 +11,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import <CoreMedia/CoreMedia.h>
 
 #import "ADAudioDefine.h"
 #import "ADUnitTool.h"
