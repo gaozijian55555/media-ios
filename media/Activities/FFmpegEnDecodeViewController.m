@@ -8,7 +8,8 @@
 
 #import "FFmpegEnDecodeViewController.h"
 #import "VideoDecoder.h"
-#import "VideoEncoder.h"
+#import "SFVideoEncoder.h"
+#import "TestAVPacket.h"
 
 @interface FFmpegEnDecodeViewController ()
 
@@ -18,22 +19,36 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    VideoDecoder *decoder = [[VideoDecoder alloc] init];
-    [decoder test];
+    self.view.backgroundColor = [UIColor whiteColor];
     
-    VideoEncoder *encoder = [[VideoEncoder alloc] init];
-    [encoder test];
-    // Do any additional setup after loading the view.
+    UIButton *btn1 = [UIButton buttonWithType:UIButtonTypeSystem];
+    btn1.frame = CGRectMake(130, 100, 150, 30);
+    [btn1 setTitle:@"测试AVPacket" forState:UIControlStateNormal];
+    [self.view addSubview:btn1];
+    [btn1 addTarget:self action:@selector(testAVPacket) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIButton *backBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    backBtn.frame = CGRectMake(20, 60, 50, 50);
+    [backBtn setTitle:@"返回" forState:UIControlStateNormal];
+    [self.view addSubview:backBtn];
+    [backBtn addTarget:self action:@selector(onTapBackBtn:) forControlEvents:UIControlEventTouchUpInside];
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+- (void)onTapBackBtn:(UIButton*)btn
+{
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
-*/
+
+- (void)testAVPacket
+{
+    [TestAVPacket testAVPacket];
+    [TestAVPacket testAVFrame];
+//    VideoDecoder *decoder = [[VideoDecoder alloc] init];
+//    [decoder test];
+//
+//    VideoEncoder *encoder = [[VideoEncoder alloc] init];
+//    [encoder test];
+}
+
 
 @end

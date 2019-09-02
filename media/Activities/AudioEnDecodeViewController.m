@@ -10,7 +10,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import "AudioHardCodec.h"
 #import "AudioDataWriter.h"
-#import "VideoEncoder.h"
+#import "SFVideoEncoder.h"
 #import <VideoToolbox/VideoToolbox.h>
 
 @interface AudioEnDecodeViewController ()<AVCaptureAudioDataOutputSampleBufferDelegate,AVCaptureVideoDataOutputSampleBufferDelegate>
@@ -42,7 +42,7 @@
 @property (nonatomic , strong) AVCaptureVideoDataOutput *videoCaptureOutput;
 
 @property (nonatomic , strong) AudioHardCodec   *audioEncoder;  //音频编码器
-@property (nonatomic , strong) VideoEncoder       *videoEncoder;
+@property (nonatomic , strong) SFVideoEncoder       *videoEncoder;
 @end
 
 @implementation AudioEnDecodeViewController

@@ -13,6 +13,6 @@
 #import "Activities/EBDropdownList/EBDropdownListView.h"
 #endif
 
-#import "Vender/cppcommon/CLog.h"
+#import "ZSMedia/Vender/cppcommon/CLog.h"
 
 #endif /* PrefixHeader_pch */
