@@ -8,7 +8,24 @@
 
 #ifndef Base_hpp
 #define Base_hpp
+extern "C"
+{
+#include "libavformat/avformat.h"
+#include "libavcodec/avcodec.h"
+#include "libavutil/avutil.h"
+}
 
 #include <stdio.h>
+using namespace std;
+
+class Base
+{
+public:
+protected:
+    // 编解码上下文
+    AVCodecContext  *pCodecCtx;
+    // 编解码器
+    AVCodec         *pCodec;
+};
 
 #endif /* Base_hpp */

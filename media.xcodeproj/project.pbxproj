@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		18081E462321E5D100350AFB /* TestMuxer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18081E452321E5D100350AFB /* TestMuxer.mm */; };
 		180F0C982310B0AE00BBF709 /* AudioHardCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = 180F0BF32310B0AD00BBF709 /* AudioHardCodec.m */; };
 		180F0C992310B0AE00BBF709 /* SFVideoEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 180F0BF92310B0AD00BBF709 /* SFVideoEncoder.mm */; };
 		180F0C9A2310B0AE00BBF709 /* VideoDecoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 180F0BFA2310B0AD00BBF709 /* VideoDecoder.mm */; };
@@ -29,6 +30,9 @@
 		180F0CB2231172DC00BBF709 /* VideoParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = 180F0CB1231172DC00BBF709 /* VideoParameters.m */; };
 		18185BB82319F29F00197B6C /* Base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 18185BB62319F29F00197B6C /* Base.cpp */; };
 		18185BBB2319FD0A00197B6C /* VideoCodecParameters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 18185BB92319FD0A00197B6C /* VideoCodecParameters.cpp */; };
+		183BEEF1231CEF8900808EE3 /* Demuxer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 183BEEEF231CEF8900808EE3 /* Demuxer.cpp */; };
+		183BEEF4231CEFF000808EE3 /* Muxer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 183BEEF2231CEFF000808EE3 /* Muxer.cpp */; };
+		187306F323249DB800B8BC7A /* FileMuxer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 187306F223249DB800B8BC7A /* FileMuxer.mm */; };
 		F411F11722CE32AC00C60488 /* ADExtAudioFile.m in Sources */ = {isa = PBXBuildFile; fileRef = F411F11622CE32AC00C60488 /* ADExtAudioFile.m */; };
 		F411F12322CEDA5500C60488 /* dropdownFlag@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = F411F11F22CEDA5500C60488 /* dropdownFlag@3x.png */; };
 		F411F12422CEDA5500C60488 /* dropdownFlag@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F411F12022CEDA5500C60488 /* dropdownFlag@2x.png */; };
@@ -77,6 +81,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		18081E442321E5D100350AFB /* TestMuxer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestMuxer.h; sourceTree = "<group>"; };
+		18081E452321E5D100350AFB /* TestMuxer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = TestMuxer.mm; sourceTree = "<group>"; };
 		180F0BF32310B0AD00BBF709 /* AudioHardCodec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AudioHardCodec.m; sourceTree = "<group>"; };
 		180F0BF42310B0AD00BBF709 /* AudioHardCodec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioHardCodec.h; sourceTree = "<group>"; };
 		180F0BF62310B0AD00BBF709 /* ADVTEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADVTEncoder.h; sourceTree = "<group>"; };
@@ -224,13 +230,19 @@
 		180F0C972310B0AE00BBF709 /* LogEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogEngine.h; sourceTree = "<group>"; };
 		180F0CAB2310B26A00BBF709 /* DataWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DataWriter.h; sourceTree = "<group>"; };
 		180F0CAC2310B26A00BBF709 /* DataWriter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DataWriter.m; sourceTree = "<group>"; };
-		180F0CAF231169E600BBF709 /* CommonDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommonDefine.h; sourceTree = "<group>"; };
+		180F0CAF231169E600BBF709 /* XRZCommonDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XRZCommonDefine.h; sourceTree = "<group>"; };
 		180F0CB0231172DC00BBF709 /* VideoParameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoParameters.h; sourceTree = "<group>"; };
 		180F0CB1231172DC00BBF709 /* VideoParameters.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoParameters.m; sourceTree = "<group>"; };
 		18185BB62319F29F00197B6C /* Base.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Base.cpp; sourceTree = "<group>"; };
 		18185BB72319F29F00197B6C /* Base.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Base.hpp; sourceTree = "<group>"; };
 		18185BB92319FD0A00197B6C /* VideoCodecParameters.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VideoCodecParameters.cpp; sourceTree = "<group>"; };
 		18185BBA2319FD0A00197B6C /* VideoCodecParameters.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = VideoCodecParameters.hpp; sourceTree = "<group>"; };
+		183BEEEF231CEF8900808EE3 /* Demuxer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Demuxer.cpp; sourceTree = "<group>"; };
+		183BEEF0231CEF8900808EE3 /* Demuxer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Demuxer.hpp; sourceTree = "<group>"; };
+		183BEEF2231CEFF000808EE3 /* Muxer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Muxer.cpp; sourceTree = "<group>"; };
+		183BEEF3231CEFF000808EE3 /* Muxer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Muxer.hpp; sourceTree = "<group>"; };
+		187306F123249DB800B8BC7A /* FileMuxer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileMuxer.h; sourceTree = "<group>"; };
+		187306F223249DB800B8BC7A /* FileMuxer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = FileMuxer.mm; sourceTree = "<group>"; };
 		F411F11422C99B6B00C60488 /* ADAudioDefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADAudioDefine.h; sourceTree = "<group>"; };
 		F411F11522CE32AC00C60488 /* ADExtAudioFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ADExtAudioFile.h; sourceTree = "<group>"; };
 		F411F11622CE32AC00C60488 /* ADExtAudioFile.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ADExtAudioFile.m; sourceTree = "<group>"; };
@@ -371,6 +383,8 @@
 				180F0BFB2310B0AD00BBF709 /* ADVTEncoder.m */,
 				180F0CB0231172DC00BBF709 /* VideoParameters.h */,
 				180F0CB1231172DC00BBF709 /* VideoParameters.m */,
+				187306F123249DB800B8BC7A /* FileMuxer.h */,
+				187306F223249DB800B8BC7A /* FileMuxer.mm */,
 			);
 			path = VideoEncode;
 			sourceTree = "<group>";
@@ -409,6 +423,10 @@
 				18185BB72319F29F00197B6C /* Base.hpp */,
 				18185BBA2319FD0A00197B6C /* VideoCodecParameters.hpp */,
 				18185BB92319FD0A00197B6C /* VideoCodecParameters.cpp */,
+				183BEEEF231CEF8900808EE3 /* Demuxer.cpp */,
+				183BEEF0231CEF8900808EE3 /* Demuxer.hpp */,
+				183BEEF2231CEFF000808EE3 /* Muxer.cpp */,
+				183BEEF3231CEFF000808EE3 /* Muxer.hpp */,
 			);
 			path = ffmpegExtractor;
 			sourceTree = "<group>";
@@ -644,8 +662,10 @@
 		180F0C902310B0AE00BBF709 /* testffmpeg */ = {
 			isa = PBXGroup;
 			children = (
-				180F0C912310B0AE00BBF709 /* TestAVPacket.mm */,
 				180F0C922310B0AE00BBF709 /* TestAVPacket.h */,
+				180F0C912310B0AE00BBF709 /* TestAVPacket.mm */,
+				18081E442321E5D100350AFB /* TestMuxer.h */,
+				18081E452321E5D100350AFB /* TestMuxer.mm */,
 			);
 			path = testffmpeg;
 			sourceTree = "<group>";
@@ -671,7 +691,7 @@
 		180F0CAE231169E600BBF709 /* common */ = {
 			isa = PBXGroup;
 			children = (
-				180F0CAF231169E600BBF709 /* CommonDefine.h */,
+				180F0CAF231169E600BBF709 /* XRZCommonDefine.h */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -940,6 +960,7 @@
 				180F0C9A2310B0AE00BBF709 /* VideoDecoder.mm in Sources */,
 				F44F230322C32BD400A58FD0 /* AudioDataWriter.m in Sources */,
 				18185BBB2319FD0A00197B6C /* VideoCodecParameters.cpp in Sources */,
+				183BEEF1231CEF8900808EE3 /* Demuxer.cpp in Sources */,
 				F4908D2322ABB44B002566FF /* GLContext.m in Sources */,
 				F45E4686228A514E00C7DBF9 /* ViewController.m in Sources */,
 				18185BB82319F29F00197B6C /* Base.cpp in Sources */,
@@ -954,14 +975,17 @@
 				F4E1470B22C077D400FB1D13 /* AudioUnitRecorder.m in Sources */,
 				F460446622D6DD0200D0BE5F /* CommonFunction.m in Sources */,
 				F4472DE822C22F9B00C52CCC /* ADAudioSession.m in Sources */,
+				18081E462321E5D100350AFB /* TestMuxer.mm in Sources */,
 				F4908D1C22ABB44B002566FF /* GLFrameBuffer.m in Sources */,
 				180F0CA82310B0AE00BBF709 /* CLog.c in Sources */,
 				180F0CAD2310B26A00BBF709 /* DataWriter.m in Sources */,
 				180F0CA92310B0AE00BBF709 /* LogEngine.mm in Sources */,
+				183BEEF4231CEFF000808EE3 /* Muxer.cpp in Sources */,
 				F45E46D9228F87CC00C7DBF9 /* ADAudioUnitPlay.m in Sources */,
 				F460446322D57E7600D0BE5F /* AudioUnitGenericOutput.m in Sources */,
 				F4908D2022ABB44B002566FF /* GLUtils.m in Sources */,
 				F4908D2922ABB751002566FF /* YuvPlayer.m in Sources */,
+				187306F323249DB800B8BC7A /* FileMuxer.mm in Sources */,
 				F47CC8EB22FCEFA300A05D9B /* FFmpegEnDecodeViewController.m in Sources */,
 				F4E1470722C0776600FB1D13 /* AVAudioSession+extion.m in Sources */,
 				180F0C992310B0AE00BBF709 /* SFVideoEncoder.mm in Sources */,

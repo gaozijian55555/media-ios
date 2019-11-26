@@ -10,6 +10,7 @@
 #import "VideoDecoder.h"
 #import "SFVideoEncoder.h"
 #import "TestAVPacket.h"
+#import "TestMuxer.h"
 
 @interface FFmpegEnDecodeViewController ()
 
@@ -41,13 +42,15 @@
 
 - (void)testAVPacket
 {
-    [TestAVPacket testAVPacket];
-    [TestAVPacket testAVFrame];
+//    [TestAVPacket testAVPacket];
+//    [TestAVPacket testAVFrame];
 //    VideoDecoder *decoder = [[VideoDecoder alloc] init];
 //    [decoder test];
 //
 //    VideoEncoder *encoder = [[VideoEncoder alloc] init];
 //    [encoder test];
+    
+    [TestMuxer testMuxer];
 }
 
 

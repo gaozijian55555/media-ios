@@ -1,13 +1,13 @@
 //
-//  CommonDefine.h
+//  XRZCommonDefine.h
 //  media
 //
 //  Created by 飞拍科技 on 2019/8/14.
 //  Copyright © 2019 飞拍科技. All rights reserved.
 //
 
-#ifndef CommonDefine_h
-#define CommonDefine_h
+#ifndef XRZCommonDefine_h
+#define XRZCommonDefine_h
 
 // 宏定义
 #define CP_YUV(dst, src, linesize, width, height) \
@@ -68,6 +68,9 @@ struct _VideoPacket {
     
     uint8_t *data;
     int size;
+    int width;
+    int height;
+    int keyFrame;
 };
 typedef struct _VideoPacket VideoPacket;
 

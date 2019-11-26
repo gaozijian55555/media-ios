@@ -10,12 +10,14 @@
 #import <VideoToolbox/VideoToolbox.h>
 #import <AVFoundation/AVFoundation.h>
 #import "DataWriter.h"
-#import "CommonDefine.h"
+#import "XRZCommonDefine.h"
 #import "SFVideoEncoder.h"
+#import "ADVTEncoder.h"
+#import "FileMuxer.h"
 
 /** 使用相机必须在info.plist中申请NSCameraUsageDescription权限
  */
-@interface VideoRecordController ()<AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface VideoRecordController ()<AVCaptureVideoDataOutputSampleBufferDelegate,VideoEncodeProtocal>
 {
     dispatch_queue_t captureQueue;  // 采集数据的线程
     dispatch_queue_t encodeQueue;  // 编码数据的线程
@@ -25,6 +27,7 @@
     int     _width,_height; // 录制视频的宽和高
     
     SFVideoEncoder  *_sfVideoEncoder;
+    FileMuxer       *_fileMuxer;
     
     dispatch_source_t _timer;
 }
@@ -92,22 +95,20 @@
     
     // 初始化编码器
     _sfVideoEncoder = [[SFVideoEncoder alloc] init];
+    _sfVideoEncoder.enableWriteToh264 = YES;
+    _sfVideoEncoder.h264FilePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"abc-test.h264"];
+    _sfVideoEncoder.delegate = self;
     // H264各个分辨率推荐的码率表:http://www.lighterra.com/papers/videoencodingh264/
     int avgbitRate = 2.56*1000000;
     /** 遇到问题：编码器缓冲的视频帧数量过大导致内存暴涨
      *  解决方案：经过调试，发现编码器缓存的视频数目=gopsize+b帧数目+4；通过控制gopsize和b帧数目来控制缓存的视频数目大小
      */
-    [_sfVideoEncoder setParameters:[[VideoParameters alloc] initWithWidth:_width height:_height pixelformat:MZPixelFormatYUV420P fps:30 gop:20 bframes:3 bitrate:avgbitRate]];
-    
-    
-    
-    
+    [_sfVideoEncoder setParameters:[[VideoParameters alloc] initWithWidth:_width height:_height pixelformat:MZPixelFormatYUV420P fps:30 gop:10 bframes:3 bitrate:avgbitRate]];
 }
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     [_sfVideoEncoder setParameters:NULL];
-    NSLog(@"高效的。。。。。。");
 }
 
 - (void)onTapBtn:(UIButton*)btn
@@ -372,13 +373,36 @@
         // 开始编码
 //        NSLog(@"开始编码 ==>%ld",size);
         count++;
-        [_sfVideoEncoder sendRawVideo:frame packet:NULL];
+        [_sfVideoEncoder encodeRawVideo:frame];
+//
+//        //xrz:todo 模拟停止编码动作
+//        static NSInteger val=0;
+//        if (val >= 50) {
+//            dispatch_sync(dispatch_get_main_queue(), ^{
+//                [_sfVideoEncoder closeEncoder];
+//                [self endSoftEncode];
+//            });
+//            break;
+//        }
+//        val++;
+        
+        // 封装到MP4文件中
+        if (_fileMuxer == nil) {
+            // 初始化封装器
+            NSString *filePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:@"abc.h264"];;
+            _fileMuxer = [[FileMuxer alloc] initWithPath:filePath];
+            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                [_fileMuxer openMuxer];
+            });
+        }
+        
     }
+    [_sfVideoEncoder flushEncode];
     
-    [_sfVideoEncoder endEncode];
     NSTimeInterval intal = [[NSDate date] timeIntervalSinceReferenceDate] - [begindate timeIntervalSinceReferenceDate];
     NSLog(@"结束 拉取视频 编码耗时 %.2f 秒",intal);
     dispatch_sync(dispatch_get_main_queue(), ^{
+        
         self.infoLabel.text = [NSString stringWithFormat:@"编码总耗时 %.2f 秒;每帧平均耗时 %.2f 毫秒",intal,intal*1000/count];
         [self endSoftEncode];
     });
@@ -402,6 +426,26 @@
 - (void)beginHardEncode
 {
     
+}
+
+
+#pragma mark VideoEncodeProtocal
+- (void)didEncodeSucess:(VideoPacket *)packet
+{
+    if (packet == NULL) {
+        return;
+    }
+    
+    if (_fileMuxer != NULL) {
+        [_fileMuxer writeVideoPacket:packet];
+    }
+    
+    
+}
+
+- (void)didEncodeFail:(NSError *)error
+{
+    NSLog(@"error %@",error);
 }
 
 /** 参考文章：

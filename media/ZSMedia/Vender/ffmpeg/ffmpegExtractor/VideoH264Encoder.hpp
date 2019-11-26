@@ -10,7 +10,7 @@
 #define VideoH264Encoder_hpp
 
 #include "CodecBase.hpp"
-#include "CommonDefine.h"
+#include "XRZCommonDefine.h"
 #include "VideoCodecParameters.hpp"
 #include <pthread.h>
 
@@ -28,10 +28,12 @@ public:
     bool openEncoder();
     // 编码器是否打开;打开编码器之后才可以调用编码相关函数
     bool canUseEncoder();
-    /** 编码相关函数;
-     *  @return true，代表编码成功；false 代表编码失败或者其它原因导致的失败
-     */
-    bool sendRawVideoAndReceivePacketVideo(VideoFrame *frame,VideoPacket *packet);
+    
+    typedef void EncodeCallback(void* client,VideoPacket *packet);
+    // 编码成功后的回调函数
+    void setEncodeCallback(void*client,EncodeCallback *callback);
+    // 编码相关函数;
+    void sendRawVideoAndReceivePacketVideo(VideoFrame *frame);
     
     // === 线程安全的 ==== //
     // 编码相关函数
@@ -42,10 +44,15 @@ public:
     
     // !!!!清空并释放编码器内资源；在所有编码数据发送完毕后，必须要调用一下此方法才能获取所有的编码的数据；否则无法获取所有编码数据，
     // 而且可能会造成内存没有及时释放的问题
-    void flushAndReleaseEncoder();
+    void flushEncoder();
+    
+    // 关闭编码器，终止编码工作；再其它线程调用
+    void closeEncoder();
     
 private:
-    VideoCodecParameters fParameters;
+    VideoCodecParameters    fParameters;
+    EncodeCallback          *fEncodeCallback;
+    void                    *fEncodeClient;
     // 检验参数的合法性
     bool checkParametersValidate(VideoCodecParameters parameters);
     void resetFrame();

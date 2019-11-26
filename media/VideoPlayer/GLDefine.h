@@ -14,7 +14,7 @@
 #import <OpenGLES/EAGL.h>
 #import "GLProgram.h"
 #import "GLContext.h"
-#import "CommonDefine.h"
+#import "XRZCommonDefine.h"
 
 // 视频的默认帧率
 #define Default_fps 24

@@ -32,44 +32,43 @@ VideoCodecParameters::~VideoCodecParameters()
     LOGD("~VideoCodecEncoderParameters()");
 }
 
-bool VideoCodecParameters::operator!=(VideoCodecParameters paremeter)
+bool VideoCodecParameters::operator==(VideoCodecParameters paremeter)
 {
     VideoCodecParameters par = paremeter;
-    bool ok = true;
     if (par.fCodecIdType != fCodecIdType) {
-        ok = false;
-        LOGE("fCodecIdType not eqeal <=0");
+        LOGE("fCodecIdType not eqeal");
+        return false;
     }
     
-    if (par.getBitrate() != fBitrate) {
-        ok = false;
-        LOGE("fBitrate not eqeal <=0");
+    if (par.getBitrate() != fBitrate){
+        LOGE("fBitrate not eqeal");
+        return false;
     }
     
     if (par.getWidth() != fWidth) {
-        ok = false;
-        LOGE("fBitrate not eqeal <=0");
+        LOGE("fBitrate not eqeal");
+        return false;
     }
     
     if (par.getHeight() != fHeight) {
-        ok = false;
-        LOGE("fHeight not eqeal <=0");
+        LOGE("fHeight not eqeal");
+        return false;
     }
     if (par.getFps() != fFps) {
-        ok = false;
         LOGE("fFps not eqeal");
+        return false;
     }
     if (par.getGOPSize() != fGOPSize) {
-        ok = false;
         LOGE("fGOPSize not eqeal");
+        return false;
     }
     if (par.getBFrameNum() !=fBFrameNum) {
-        ok = false;
         LOGE("fBFrameNum not eqeal");
+        return false;
     }
     if (par.getPixelFormat() !=fPixelFormat) {
-        ok = false;
         LOGE("fPixelFormat not eqeal");
+        return false;
     }
     
     return true;

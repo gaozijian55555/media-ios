@@ -13,6 +13,19 @@
 #import "BaseUnitPlayer.h"
 #import "VideoFileSource.h"
 
+typedef void(^Study)(void);
+@interface Student : NSObject
+@property (copy , nonatomic) NSString *name;
+@property (copy , nonatomic) Study study;
+@end
+
+@implementation Student
+
+- (void)dealloc
+{
+    NSLog(@"Student dealloc");
+}
+@end
 
 @interface AudioPlayerViewController ()
 @property (strong, nonatomic) ADAudioUnitPlay *unitPlay;
@@ -20,12 +33,31 @@
 @property (strong, nonatomic) ADAVAudioPlayer *audioPlayer;
 @property (strong, nonatomic) ADAVPlayer *avPlayer;
 
+@property (strong, nonatomic) Student *stu;
+@property (copy,nonatomic) NSString *name;
 @end
 
 @implementation AudioPlayerViewController
 
+- (void)dealloc
+{
+    NSLog(@"AudioPlayerViewController dealloc");
+}
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    Student *student = [[Student alloc] init];
+    
+    self.name = @"halfrost";
+    self.stu = student;
+    
+    __weak typeof(self)weakSelf = self;
+    student.study = ^{
+        NSLog(@"my name is = %@",weakSelf.name);    // 不会循环引用
+//        NSLog(@"my name is = %@",self.name);        // 循环引用
+    };
+    
+    student.study();
     
 //    self.view.backgroundColor = [UIColor whiteColor];
     

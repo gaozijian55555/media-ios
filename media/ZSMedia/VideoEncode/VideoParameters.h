@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "CommonDefine.h"
+#import "XRZCommonDefine.h"
 #import "CodecDefine.h"
 
 @interface VideoParameters : NSObject

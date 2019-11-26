@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <VideoToolbox/VideoToolbox.h>
+#import <AVFoundation/AVFoundation.h>
 #import <CoreVideo/CoreVideo.h>
 
 /** 对VideoToolbox中编码方式的封装

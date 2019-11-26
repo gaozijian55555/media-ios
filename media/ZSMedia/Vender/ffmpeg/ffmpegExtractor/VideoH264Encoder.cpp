@@ -37,7 +37,7 @@ void VideoH264Encoder::setParameters(VideoCodecParameters pram)
         return;
     }
     
-    if (pram != fParameters) {
+    if (!(pram == fParameters)) {
         fCodeIdType = pram.fCodecIdType;
         fParameters = pram;
         // 重置编码器
@@ -57,8 +57,10 @@ void VideoH264Encoder::setParameters(VideoCodecParameters pram)
     pCodecCtx->pix_fmt = pram.avpixelformat();
     // 编码后的平均码率； 单位bit/s
     pCodecCtx->bit_rate = pram.getBitrate();
-    // 视频编码用的时间基单位,通常值为{1,fps},此项设置必须有，用于决定编码后的帧率
+    // 视频编码用的时间基单位,这里为{1,fps},此项设置必须有;那么AVFrame的pts=1/fps*time_base.den*frame_index
     pCodecCtx->time_base = av_make_q(1, pram.getFps());
+    // 帧率，用于决定编码后的帧率；如果time_base为{1,fps}，这里可以省略设置
+    pCodecCtx->framerate = (AVRational){pram.getFps(), 1};
     // 视频宽，高
     pCodecCtx->width = pram.getWidth();
     pCodecCtx->height = pram.getHeight();
@@ -66,6 +68,10 @@ void VideoH264Encoder::setParameters(VideoCodecParameters pram)
     pCodecCtx->gop_size = pram.getGOPSize();
     // 一组 gop中b frame 的数目
     pCodecCtx->max_b_frames = pram.getBFrameNum();
+    // 每一帧图像中的slices数目，默认为0
+    pCodecCtx->slices = 5;
+    pCodecCtx->qmin = 10;
+    pCodecCtx->qmax = 50;
     
     if ((pCodecCtx->codec->capabilities & AV_CODEC_FLAG_LOW_DELAY)){
         LOGD("ddddd");
@@ -89,7 +95,12 @@ bool VideoH264Encoder::openEncoder()
     if (pCodecCtx == nullptr) {
         setParameters(fParameters);
     }
-
+    
+    if (fOpenedEncoder) {
+        LOGD("fOpenedEncoder is opened return");
+        return true;
+    }
+    
     int ret = avcodec_open2(pCodecCtx, pCodec, NULL);
     if (ret < 0) {
         LOGD("avcodec_open2 fail %d",ret);
@@ -106,9 +117,17 @@ bool VideoH264Encoder::canUseEncoder()
     return fOpenedEncoder;
 }
 
-void VideoH264Encoder::flushAndReleaseEncoder()
+void VideoH264Encoder::flushEncoder()
 {
+    if (pCodecCtx == NULL) {
+        LOGD("flushEncoder() but codecCtx is NULL");
+        return;
+    }
     doEncode(NULL);
+}
+
+void VideoH264Encoder::closeEncoder()
+{
     internalRelase();
 }
 
@@ -116,7 +135,7 @@ void VideoH264Encoder::flushAndReleaseEncoder()
  *  有可能输入了一帧原始数据到输入缓冲区，但是编码器并没有开始编码，导致编码输出缓冲区并没有数据;那此时就要再发送一个NULL数据到
  *  输入缓冲区，然后再次从输出缓冲区获取数据
  */
-bool VideoH264Encoder::sendRawVideoAndReceivePacketVideo(VideoFrame *frame, VideoPacket *packet)
+void VideoH264Encoder::sendRawVideoAndReceivePacketVideo(VideoFrame *frame)
 {
     // 检查AVFrame是否为NULL
     if (pFrame == NULL) {
@@ -138,8 +157,8 @@ bool VideoH264Encoder::sendRawVideoAndReceivePacketVideo(VideoFrame *frame, Vide
     
     if (frame == NULL || frame->luma == NULL) {
         LOGD("即将结束编码");
-        
     } else {
+       
         // 先将以前的值清空
         memset(pFrame->data[0], 0, pFrame->linesize[0]);
         memset(pFrame->data[1], 0, pFrame->linesize[1]);
@@ -152,13 +171,18 @@ bool VideoH264Encoder::sendRawVideoAndReceivePacketVideo(VideoFrame *frame, Vide
         /** 遇到问题：x264编码警告[libx264 @ 0x112800c00] non-strictly-monotonic PTS
          *  解决方案：传入编码器的AVFrame中的pts没有依次递增;依次递增就好
          */
-        pFrame->pts = fFramecount++;
-        LOGD("编码 编号 %d",fFramecount);
+        pFrame->pts = fFramecount;
+        fFramecount +=2;
+//        LOGD("编码 编号 %d",fFramecount);
         
         doEncode(pFrame);
     }
-    
-    return true;
+}
+
+void VideoH264Encoder::setEncodeCallback(void*client,EncodeCallback *callback)
+{
+    fEncodeClient = client;
+    fEncodeCallback = callback;
 }
 
 /** 编码时间记录：
@@ -177,6 +201,10 @@ bool VideoH264Encoder::sendRawVideoAndReceivePacketVideo(VideoFrame *frame, Vide
  *  1、相同分辨率，码率越大，帧率越小，GOP越大，B帧越多，每帧编码越耗时
  *  2、分辨率越大，每帧编码越耗时
  */
+/** 默认的视频编码规则：
+ *  1、编码后输出的每个AVPacket包最多包含一个视频帧，如果是I帧，此AVPacket中还包括SPS和PPS信息
+ *  2、ffmpeg自动为我们再每个I/B/P/SPS/PPS数据的前面填充上了0001或者001，貌似I帧前面是001，其它是0001，所以直接将AVPacket的data字段写入文件就是h264码流了
+ */
 void VideoH264Encoder::doEncode(AVFrame *frame)
 {
     /** return
@@ -194,30 +222,52 @@ void VideoH264Encoder::doEncode(AVFrame *frame)
     
     if (ret != 0) {
         LOGD("avcodec_send_frame fail %d",ret);
+        return;
     }
     
+    AVPacket *pkt = av_packet_alloc();
     while (true) {
-        AVPacket *pkt = av_packet_alloc();
         /** return
          *  AVERROR(EAGAIN); -35 编码器输出缓冲区已经空了(已无编码好的数据了)
          *  AVERROR_EOF;编码器已经处于flushed状态了，无法再输出编码数据了
          *  其它错误
          */
         ret = avcodec_receive_packet(pCodecCtx, pkt);
+        
+        if (ret == AVERROR(EAGAIN)) {
+            break;
+        } else if (ret == AVERROR_EOF) {
+            LOGD("avcodec_receive_packet finish %d",ret);
+            break;
+        } else if (ret < 0) {
+            LOGD("avcodec_receive_packet fail %d",ret);
+            break;
+        }
+        
+        // 回调出去
+        if (fEncodeCallback != NULL) {
+            
+            VideoPacket *rpkt = (VideoPacket*)malloc(sizeof(VideoPacket));
+            rpkt->data = (uint8_t*)av_mallocz(pkt->size);
+            rpkt->size = pkt->size;
+            rpkt->width = fParameters.getWidth();
+            rpkt->height = fParameters.getHeight();
+            memcpy(rpkt->data, pkt->data, pkt->size);
+            
+            // 回调
+            fEncodeCallback(fEncodeClient,rpkt);
+        }
+        
         // 释放内存
         av_packet_unref(pkt);
-
-        if (ret < 0) {
-            LOGD("avcodec_receive_packet fail %d",ret);
-            return;
-        }
-
         LOGD("avcodec_receive_packet sucess");
     }
+    
+    av_packet_free(&pkt);
 }
 
 /** 遇到问题：当avcodec_send_frame()第二个参数传入NULL结束编码后，内存没有及时释放；
- *  解决方案：这是由于avcodec_send_frame()函数内部会copy一份到编码器缓冲中，所以编码结束后要释放AVCodecContext，z
+ *  解决方案：这是由于avcodec_send_frame()函数内部会copy一份到编码器缓冲中，所以编码结束后要释放AVCodecContext
  */
 void VideoH264Encoder::internalRelase()
 {

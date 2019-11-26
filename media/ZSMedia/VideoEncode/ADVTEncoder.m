@@ -120,6 +120,7 @@
      *  ABR:在一定的时间范围内达到设定的码率，但是局部码率峰值可以超过设定的码率，平均码率恒定。可以作为VBR和CBR的一种折中选择。
      *
      *  H264各个分辨率推荐的码率表:http://www.lighterra.com/papers/videoencodingh264/
+     *  Link(Mbps)推荐链路大小，Bitrate(Mbps)推荐编码码率，Video(kbps)推荐视频编码码率,Audio(kbps)推荐音频编码码率
      */
     SInt32 avgbitRate = 0.96*1000000;   // 注意单位是bit/s 这里是640x480的 为0.96Mbps
     CFNumberRef avgRateLimitRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &avgbitRate);

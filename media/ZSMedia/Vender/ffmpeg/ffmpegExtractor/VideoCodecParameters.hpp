@@ -29,7 +29,7 @@ public:
 //    VideoCodecParameters(VideoCodecParameters &par);
     ~VideoCodecParameters();
     
-    bool operator !=(VideoCodecParameters par);
+    bool operator ==(VideoCodecParameters par);
     
     void setWidth(int width);
     const int getWidth();
