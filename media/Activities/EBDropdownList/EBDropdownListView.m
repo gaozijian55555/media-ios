@@ -155,6 +155,7 @@ static CGFloat const kItemCellHeight = 40;
     UITableViewCell *cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:nil];
     cell.textLabel.font = _font;
     cell.textLabel.textColor = _textColor;
+    cell.backgroundColor = [UIColor whiteColor];
     EBDropdownListItem *item = _dataSource[indexPath.row];
     cell.textLabel.text = item.itemName;
     return cell;

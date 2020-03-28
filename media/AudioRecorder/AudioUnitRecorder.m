@@ -99,6 +99,7 @@
         for (NSInteger i=0; i<chs; i++) {
             _bufferList->mBuffers[i].mData = malloc(BufferList_cache_size);
             _bufferList->mBuffers[i].mDataByteSize = BufferList_cache_size;
+            memset(_bufferList->mBuffers[i].mData,0,BufferList_cache_size);
         }
     }
     
@@ -441,8 +442,6 @@ static OSStatus saveOutputCallback(void *inRefCon,
     BOOL isPlanner = player->_isPlanner;
     NSInteger bytesPerChannel = player.audioSession.bytesPerChannel;
     static Float64 lastTime = 0;
-    
-    NSLog(@"录音 actionflags %u 时间 %f element %d frames %d channel %d planer %d 线程==>%@",*ioActionFlags,inTimeStamp->mSampleTime-lastTime,inBusNumber,inNumberFrames,chs,isPlanner,[NSThread currentThread]);
     lastTime = inTimeStamp->mSampleTime;
     
     // 如果作为音频录制的回调，ioData为NULL
@@ -454,9 +453,12 @@ static OSStatus saveOutputCallback(void *inRefCon,
     // 该函数的作用就是将麦克风采集的音频数据根据前面配置的RemoteIO输出数据格式渲染出来，然后放到
     // bufferList缓冲中；那么这里将是PCM格式的原始音频帧
     status = AudioUnitRender(player->_ioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, bufferList);
-    
+    /** 遇到问题：AudioUnitRender 返回-50
+     */
+    NSLog(@"status %d 录音 actionflags %u 时间 %f element %d frames %d channel %d planer %d 线程==>%@",status,*ioActionFlags,inTimeStamp->mSampleTime-lastTime,inBusNumber,inNumberFrames,chs,isPlanner,[NSThread currentThread]);
     if (status != noErr) {
         NSLog(@"AudioUnitRender fail %d",status);
+        return status;
     }
     if (bufferList->mBuffers[0].mData == NULL) {
         return noErr;
