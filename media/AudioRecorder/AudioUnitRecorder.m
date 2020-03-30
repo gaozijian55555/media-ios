@@ -306,16 +306,16 @@
     // 录制音频的输出的数据格式
     CGFloat rate = self.audioSession.currentSampleRate;
     NSInteger chs = self.audioSession.currentChannels;
-    AudioStreamBasicDescription recordASDB = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs bytesPerChannel:_bytesPerchannel];
+    _ioRecordStreamDesForOutput = [ADUnitTool streamDesWithLinearPCMformat:flags sampleRate:rate channels:chs bytesPerChannel:_bytesPerchannel];
     
     // 设置录制音频的输数据格式
-    status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &recordASDB, sizeof(recordASDB));
+    status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &_ioRecordStreamDesForOutput, sizeof(_ioRecordStreamDesForOutput));
     if (status != noErr) {
         NSLog(@"AudioUnitSetProperty _ioUnit kAudioUnitScope_Output fail %d",status);
     }
     
     if (_isEnablePlayWhenRecord) {
-        status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &recordASDB, sizeof(recordASDB));
+        status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &_ioRecordStreamDesForOutput, sizeof(_ioRecordStreamDesForOutput));
         if (status != noErr) {
             NSLog(@"AudioUnitSetProperty _ioUnit kAudioUnitScope_Input 0 fail %d",status);
         }
@@ -349,7 +349,7 @@
          *  录制的音频作为一路音频输入到混音器，从文件读取的音频作为另一路音频输入到混音器，它们要保持相同的采样率，采样格式，声道数。这里以录制的
          *  音频输出的数据格式作为混音器数据的输入格式，所以格式转换器用于转换从文件读取的音频数据
          */
-        status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0,&recordASDB, sizeof(recordASDB));
+        status = AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0,&_ioRecordStreamDesForOutput, sizeof(_ioRecordStreamDesForOutput));
     }
     
 }
@@ -392,7 +392,11 @@
             AURenderCallbackStruct callback;
             callback.inputProc = mixerInputDataCallback;
             callback.inputProcRefCon = (__bridge void*)self;
-            status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, i, &callback, sizeof(callback));
+            if (_isEnablePlayWhenRecord && i==0) {
+              status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, i, &_ioRecordStreamDesForOutput, sizeof(_ioRecordStreamDesForOutput));
+            } else {
+              status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, i, &_mixerStreamDesForInput, sizeof(_mixerStreamDesForInput));
+            }
             if (status != noErr) {
                 NSLog(@"AudioUnitSetProperty kAudioUnitProperty_SetRenderCallback %d",status);
             }
@@ -403,11 +407,16 @@
         }
         
         if (_isEnablePlayWhenRecord) {
-            AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &_mixerStreamDesForInput, sizeof(_mixerStreamDesForInput));
+#warning 问题描述： 耳返时，扬声器中并不会出现麦克风声音 \
+            原因：开启耳返时，mixerInputDataCallback中麦克风一路的赋数据方法报错 -50 \
+            解决：耳返时，将混音器一路输入描述设置成麦克风的输出，不需要改变麦克风输出格式 \
+            （所以注销下面这句话， 增加395行的混音器两路输入描述的逻辑）
+//            AudioUnitSetProperty(_ioUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 1, &_mixerStreamDesForInput, sizeof(_mixerStreamDesForInput));
             /** 遇到问题：混音器的输出格式 无法设置？一直返回-108868，但是也不影响结果。
              *  分析原因：想一下也正确，因为混音器的输出格式肯定和输入格式一样
              *  解决方案：去掉混音器输出格式设置，对结果不影响
              */
+#warning 这里设置失败应该是352行代码已经设置了扬声器的输入格式，混音器和扬声器相连，混音器的输出应该被默认设置为了扬声器的输入描述，所以 这里可能算是重复设置 就报错了
 //            status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &_mixerStreamDesForOutput, sizeof(_mixerStreamDesForOutput));
         }
         

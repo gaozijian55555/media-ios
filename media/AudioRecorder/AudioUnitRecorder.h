@@ -39,9 +39,10 @@
     // 是否开启了混音
     BOOL _enableMixer;
     NSString *_mixerPath;
-    AudioStreamBasicDescription _mixerStreamDesForInput;    // 混音器的输入数据格式
+    AudioStreamBasicDescription _mixerStreamDesForInput;     // 混音器的输入数据格式
     AudioStreamBasicDescription _mixerStreamDesForOutput;    // 混音器的输出数据格式
-    
+    AudioStreamBasicDescription _ioRecordStreamDesForOutput; // 麦克风的输出数据格式
+  
     // 是否耳返
     BOOL _isEnablePlayWhenRecord;
 }
