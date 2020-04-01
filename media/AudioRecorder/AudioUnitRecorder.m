@@ -284,6 +284,9 @@
     if (status != noErr) {
         NSLog(@"AUGraphNodeInfo _convertNode fail %d",status);
     }
+  
+    // 5、设置混音器监听方法，用于获取混音之后的数据并存储
+    AudioUnitAddRenderNotify(_mixerUnit, mixerOutputCallBackFunc, (__bridge void * _Nullable)(self));
 }
 
 - (void)setupAudioUnitsProperty
@@ -408,7 +411,8 @@
              *  分析原因：想一下也正确，因为混音器的输出格式肯定和输入格式一样
              *  解决方案：去掉混音器输出格式设置，对结果不影响
              */
-//            status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &_mixerStreamDesForOutput, sizeof(_mixerStreamDesForOutput));
+          //SepJGod #2020.3.31 这里还是要放开的，这里有报错的原因上一次Request提到了，应该是上面设置了扬声器输入的原因（如果这里不设，会导致混音器的输出数据有杂音，所以放开） （tip: 混音器的输入和输出格式可以不一样，输入可以存在多种不同格式，其内部会做混合处理。但输出只有一种）
+            status = AudioUnitSetProperty(_mixerUnit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, 0, &_mixerStreamDesForOutput, sizeof(_mixerStreamDesForOutput));
         }
         
         if ((self.dataWriteForNonPCM||self.dataWriteForPCM)) {
@@ -421,6 +425,56 @@
             }
         }
     }
+}
+
+/** 混音器的输出通知, 用于接收混音器的输出数据并进行存储 */
+static OSStatus mixerOutputCallBackFunc(void *inRefCon,
+                                     AudioUnitRenderActionFlags *ioActionFlags,
+                                     const AudioTimeStamp *inTimeStamp,
+                                     UInt32 inBusNumber,
+                                     UInt32 inNumberFrames,
+                                     AudioBufferList *ioData){
+  // 检测只有在返回类型为通知时，才进入存储流程
+  if (*ioActionFlags == kAudioUnitRenderAction_PostRender) {
+    
+    MGAudioUnitMixRecorder *player = (__bridge MGAudioUnitMixRecorder*)inRefCon;
+    UInt32 chs = (UInt32)player.audioSession.currentChannels;
+    BOOL isPlanner = player->_isPlanner;
+    NSInteger bytesPerChannel = player.audioSession.bytesPerChannel;
+    
+    AudioBufferList *bufferList = ioData;
+
+     // 遇到问题：如果采集的存储格式为Planner类型，播放不正常
+     //  解决方案：ios采集的音频为小端字节序，采集格式为32位，只需要将bufferList中mBuffers对应的数据重新
+     //  组合成 左声道右声道....左声道右声道顺序的存储格式即可
+    // 注： 这里选择isPlanner时会有杂音，因为我用的是交叉存储（isPlanner=NO）方式，也没仔细看这个问题，留给作者解决吧(#^.^#)
+    if (isPlanner) {
+      // 则需要重新排序一下，将音频数据存储为packet 格式
+      int singleChanelLen = bufferList->mBuffers[0].mDataByteSize;
+      size_t totalLen = singleChanelLen * chs;
+      Byte *buf = (Byte *)malloc(singleChanelLen * chs);
+      bzero(buf, totalLen);
+      for (int j=0; j<singleChanelLen/bytesPerChannel;j++) {
+        for (int i=0; i<chs; i++) {
+          Byte *buffer = bufferList->mBuffers[i].mData;
+          memcpy(buf+j*chs*bytesPerChannel+bytesPerChannel*i, buffer+j*bytesPerChannel, bytesPerChannel);
+        }
+      }
+      if (player.dataWriteForPCM) {
+        [player.dataWriteForPCM writeDataBytes:buf len:totalLen];
+      }
+      // 释放资源
+      free(buf);
+      buf = NULL;
+    } else {
+      AudioBuffer buffer = ioData->mBuffers[0];
+      UInt32 bufferLenght = ioData->mBuffers[0].mDataByteSize;
+      if (player.dataWriteForPCM) {
+        [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
+      }
+    }
+  }
+  return noErr;
 }
 
 /** 作为音频录制输出的回调
