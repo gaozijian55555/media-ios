@@ -461,7 +461,8 @@ static OSStatus mixerOutputCallBackFunc(void *inRefCon,
         }
       }
       if (player.dataWriteForPCM) {
-        [player.dataWriteForPCM writeDataBytes:buf len:totalLen];
+        //需要获取混音后的数据时再打开，否则会和录音回调中写文件的方法冲突
+//        [player.dataWriteForPCM writeDataBytes:buf len:totalLen];
       }
       // 释放资源
       free(buf);
@@ -470,7 +471,8 @@ static OSStatus mixerOutputCallBackFunc(void *inRefCon,
       AudioBuffer buffer = ioData->mBuffers[0];
       UInt32 bufferLenght = ioData->mBuffers[0].mDataByteSize;
       if (player.dataWriteForPCM) {
-        [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
+        //需要获取混音后的数据时再打开，否则会和录音回调中写文件的方法冲突
+//        [player.dataWriteForPCM writeDataBytes:buffer.mData len:bufferLenght];
       }
     }
   }
